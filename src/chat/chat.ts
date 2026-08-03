@@ -92,6 +92,12 @@ async function sendMessage(): Promise<void> {
   const text = promptInput.value.trim()
   if (!text || streaming) return
 
+  const model = modelSelect.value
+  if (!model) {
+    showError('没有可用的模型，请先在 Ollama 中安装（ollama pull <模型名>）')
+    return
+  }
+
   // 系统提示词：有内容则保证位于上下文最前
   const system = systemPromptInput.value.trim()
   if (system && history[0]?.role !== 'system') {
@@ -101,12 +107,6 @@ async function sendMessage(): Promise<void> {
   history.push({ role: 'user', content: text })
   promptInput.value = ''
   appendMessage('user', text)
-
-  const model = modelSelect.value
-  if (!model) {
-    showError('没有可用的模型，请先在 Ollama 中安装（ollama pull <模型名>）')
-    return
-  }
 
   const bubble = appendMessage('assistant', '')
   abortController = new AbortController()
