@@ -43,7 +43,15 @@ function copyAssets(): void {
 }
 
 function clean(): void {
-  if (existsSync(DIST)) rmSync(DIST, { recursive: true, force: true })
+  if (!existsSync(DIST)) return
+  try {
+    rmSync(DIST, { recursive: true, force: true })
+  } catch (err) {
+    // 常见于复制/解压的项目：dist 归属 root 而当前用户无写权限
+    console.warn(`警告: 无法清空 ${DIST} (${(err as Error).message})`)
+    console.warn('若构建随后因权限失败，请先修复目录所有权:')
+    console.warn(`  sudo chown -R $(whoami) ${resolve('..')}`)
+  }
 }
 
 async function buildOnce(minify: boolean): Promise<void> {
