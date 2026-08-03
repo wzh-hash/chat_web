@@ -132,39 +132,4 @@
   white-space: nowrap;
 }
 
-/* 设置对话框 */
-#settings-dialog {
-  border: none;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 20px;
-  width: min(420px, 90vw);
-}
-
-#settings-dialog::backdrop {
-  background: rgba(0, 0, 0, 0.35);
-}
-
-#settings-dialog h2 {
-  font-size: 16px;
-  margin-bottom: 14px;
-}
-
-#settings-dialog form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-#settings-dialog label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.dialog-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
-}
+/* 对话框基础样式见 base.css */

@@ -90,6 +90,11 @@ function handleProxy(proxy: Proxy, req: import('node:http').IncomingMessage,
   })
 
   upstreamReq.on('error', (err: NodeJS.ErrnoException) => {
+    // 响应可能已开始写入，此时不能再 writeHead
+    if (res.headersSent) {
+      res.end()
+      return
+    }
     if (err.code === 'ECONNREFUSED') {
       sendError(res, 502, `代理目标不可达: ${proxy.target.host}（请确认上游服务已启动）`)
     } else {

@@ -145,6 +145,43 @@ label {
   display: none !important;
 }
 
+/* 对话框（各页共用） */
+dialog {
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  width: min(420px, 90vw);
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+dialog h2 {
+  font-size: 16px;
+  margin-bottom: 14px;
+}
+
+dialog form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+dialog label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
 /* 空态 */
 .empty-state {
   display: flex;

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.ts",
-    "watch": "node scripts/build.ts --watch --serve",
+    "watch": "node scripts/build.ts --watch",
     "serve": "node scripts/serve.ts",
     "dev": "node scripts/build.ts --watch --serve"
   },

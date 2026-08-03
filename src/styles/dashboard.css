@@ -1,1 +1,128 @@
-/* dashboard.css — 仪表盘页专属样式（阶段1 填充） */
+/* dashboard.css — 仪表盘页专属样式 */
+
+.dash-app {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 100vh;
+}
+
+/* 顶栏 */
+.dash-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+.dash-header h1 {
+  font-size: 17px;
+  margin-right: auto;
+}
+
+.back-link {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.header-controls {
+  display: flex;
+  gap: 8px;
+}
+
+/* 卡片网格 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 12px;
+}
+
+#empty-hint {
+  height: 200px;
+}
+
+/* 单张卡片 */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 6px;
+}
+
+.card-title {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-status {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-secondary);
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-status.is-error {
+  color: var(--danger);
+}
+
+.card-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.card-actions button {
+  padding: 3px 8px;
+  font-size: 12px;
+}
+
+.chart-body {
+  position: relative;
+  flex: 1;
+  min-height: 240px;
+}
+
+.chart-holder {
+  position: absolute;
+  inset: 0;
+}
+
+/* 空态/错误覆盖层 */
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+
+/* 对话框基础样式见 base.css */
+.form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.form-row label {
+  flex: 1;
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 13px;
+}
