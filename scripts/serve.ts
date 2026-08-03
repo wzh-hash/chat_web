@@ -15,7 +15,7 @@
 
 import { createServer, request as httpRequest } from 'node:http'
 import { request as httpsRequest } from 'node:https'
-import { createReadStream, existsSync, statSync } from 'node:fs'
+import { createReadStream, existsSync, statSync, readFileSync } from 'node:fs'
 import { join, normalize, extname, resolve } from 'node:path'
 
 type Proxy = { prefix: string; target: URL }
@@ -39,10 +39,14 @@ function parseArgs(argv: string[]): {
   port: number
   dir: string
   proxies: Proxy[]
+  wslHost: string | null
 } {
   let port = 8000
   let dir = resolve('dist')
-  const proxies: Proxy[] = []
+  let siotProxy = false
+  let ollamaProxy = false
+  let siotTarget = ''
+  let ollamaTarget = ''
 
   let i = 0
   // 仅当下一个参数不是 -- 开头的标志时，才把它作为值消费
@@ -60,12 +64,49 @@ function parseArgs(argv: string[]): {
     if (a === '--port') port = Number(takeValue(String(port)))
     else if (a === '--dir') dir = resolve(takeValue(dir))
     else if (a === '--siot-proxy') {
-      proxies.push({ prefix: '/siot/', target: new URL(takeValue('http://127.0.0.1:8080')) })
+      siotProxy = true
+      siotTarget = takeValue('')
     } else if (a === '--ollama-proxy') {
-      proxies.push({ prefix: '/ollama/', target: new URL(takeValue('http://127.0.0.1:11434')) })
+      ollamaProxy = true
+      ollamaTarget = takeValue('')
     }
   }
-  return { port, dir, proxies }
+
+  // WSL 环境下代理默认指向 Windows 宿主机（WSL 的 127.0.0.1 是 WSL 自己）
+  const wslHost = detectWindowsHost()
+  const proxies: Proxy[] = []
+  if (siotProxy) {
+    const target = siotTarget || (wslHost ? `http://${wslHost}:8080` : 'http://127.0.0.1:8080')
+    proxies.push({ prefix: '/siot/', target: new URL(target) })
+  }
+  if (ollamaProxy) {
+    const target = ollamaTarget || (wslHost ? `http://${wslHost}:11434` : 'http://127.0.0.1:11434')
+    proxies.push({ prefix: '/ollama/', target: new URL(target) })
+  }
+  return { port, dir, proxies, wslHost }
+}
+
+/** 在 WSL 中返回 Windows 宿主机 IP（IPv4 默认网关）；非 WSL 环境返回 null */
+function detectWindowsHost(): string | null {
+  try {
+    const version = readFileSync('/proc/version', 'utf8')
+    if (!/microsoft|wsl/i.test(version)) return null
+    const routes = readFileSync('/proc/net/route', 'utf8').trim().split('\n')
+    for (const line of routes.slice(1)) {
+      const cols = line.split('\t')
+      // 默认路由：Destination 为 00000000，且网关非 0
+      if (cols[1] === '00000000' && cols[2] && cols[2] !== '00000000') {
+        const gw = cols[2]
+        // 十六进制小端序 → IP 点分格式
+        return [3, 2, 1, 0]
+          .map((n) => parseInt(gw.slice(n * 2, n * 2 + 2), 16))
+          .join('.')
+      }
+    }
+  } catch {
+    // 非 Linux 或读取失败：不探测
+  }
+  return null
 }
 
 function sendError(res: import('node:http').ServerResponse, status: number, msg: string): void {
@@ -136,7 +177,7 @@ function handleStatic(dir: string, req: import('node:http').IncomingMessage,
   createReadStream(finalPath).pipe(res)
 }
 
-const { port, dir, proxies } = parseArgs(process.argv.slice(2))
+const { port, dir, proxies, wslHost } = parseArgs(process.argv.slice(2))
 
 const server = createServer((req, res) => {
   const url = req.url ?? '/'
@@ -162,6 +203,9 @@ server.on('error', (err: NodeJS.ErrnoException) => {
 
 server.listen(port, () => {
   console.log(`静态服务器: http://localhost:${port}/  (目录: ${dir})`)
+  if (wslHost) {
+    console.log(`检测到 WSL 环境: 代理目标为 Windows 宿主机 (${wslHost})`)
+  }
   for (const p of proxies) {
     console.log(`代理: ${p.prefix} → ${p.target.href}`)
   }

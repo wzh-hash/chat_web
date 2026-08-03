@@ -80,7 +80,12 @@ async function watchMode(minify: boolean, serve: boolean): Promise<void> {
 }
 
 function startServer(): void {
-  const child = spawn(process.execPath, [resolve('scripts/serve.ts')], {
+  // 默认开启 SIoT/Ollama 同源代理（页面设置中可切换直连/代理）
+  const child = spawn(process.execPath, [
+    resolve('scripts/serve.ts'),
+    '--siot-proxy',
+    '--ollama-proxy',
+  ], {
     stdio: 'inherit',
   })
   child.on('error', (err) => console.error('启动服务器失败:', err))

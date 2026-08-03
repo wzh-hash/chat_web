@@ -25,7 +25,8 @@ export async function listModels(): Promise<OllamaModel[]> {
   try {
     res = await fetch(`${ollamaBase()}/api/tags`)
   } catch {
-    throw new Error('无法连接 Ollama，请确认服务已启动（默认 127.0.0.1:11434）')
+    // 服务未启动或跨域(CORS)被拦截都会抛 TypeError
+    throw new Error('无法连接 Ollama，请确认服务已启动（默认 127.0.0.1:11434）；若服务在远程或遇到跨域限制，请在⚙设置中切换为"经本地服务器代理"')
   }
   if (!res.ok) throw new Error(`Ollama 返回错误: HTTP ${res.status}`)
   const data = (await res.json()) as { models?: OllamaModel[] }
@@ -49,7 +50,7 @@ export async function chatStream(
     })
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') throw err
-    throw new Error('无法连接 Ollama，请确认服务已启动（默认 127.0.0.1:11434）')
+    throw new Error('无法连接 Ollama，请确认服务已启动（默认 127.0.0.1:11434）；若服务在远程或遇到跨域限制，请在⚙设置中切换为"经本地服务器代理"')
   }
 
   if (!res.ok) {

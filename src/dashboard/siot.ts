@@ -57,7 +57,10 @@ async function requestJson(url: string, offlineMsg: string): Promise<SiotRespons
   try {
     res = await fetch(url)
   } catch {
-    throw new Error(offlineMsg)
+    // fetch 抛 TypeError 既可能是服务未启动，也可能是跨域(CORS)被浏览器拦截
+    throw new Error(
+      `${offlineMsg}；若服务确实已启动，通常是跨域(CORS)限制——在页面⚙设置中把连接方式切换为"经本地服务器代理"即可`,
+    )
   }
   if (!res.ok) {
     throw new Error(`SIoT 返回错误: HTTP ${res.status}`)

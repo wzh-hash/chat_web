@@ -35,6 +35,15 @@ npm run dev        # 构建 + 监听 + 启动静态服务器 → http://localhos
 - **直连**：浏览器直接请求上游（Ollama 支持 localhost 跨域；SIoT 视版本而定）
 - **代理**：经本地静态服务器的 `/ollama`、`/siot` 同源代理（上游不在 `localhost` 时或遇到 CORS 问题时可选用）
 
+## WSL 环境（服务在 Windows 上）
+
+如果你在 WSL 里运行本项目、而 Ollama/SIoT 跑在 Windows 上：
+
+- 页面能正常打开（WSL2 自动转发 localhost 端口）
+- **聊天页**：保持**直连**即可（浏览器在 Windows 上，`127.0.0.1:11434` 直达 Windows 的 Ollama）
+- **仪表盘**：在 ⚙ 设置中切到**经本地服务器代理**——serve.ts 会自动探测 Windows 宿主机 IP 作为代理目标（WSL 的 `127.0.0.1` 指向 WSL 自己，不能直达 Windows 服务）
+- 也可手动指定：`node scripts/serve.ts --siot-proxy http://<Windows-IP>:8080`
+
 ## 开发
 
 ```
