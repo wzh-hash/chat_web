@@ -8,7 +8,60 @@
   <link rel="stylesheet" href="assets/chat.css">
 </head>
 <body>
-  <div id="app"></div>
+  <div id="app" class="chat-app">
+    <header class="chat-header card">
+      <a class="back-link" href="index.html">← 首页</a>
+      <h1>聊天</h1>
+      <div class="header-controls">
+        <label class="model-label">模型
+          <select id="model-select" title="选择 Ollama 模型"></select>
+        </label>
+        <button id="settings-btn" title="Ollama 设置">⚙ 设置</button>
+        <button id="clear-btn" class="danger" title="清空对话">清空</button>
+      </div>
+    </header>
+
+    <div id="error-banner" class="error-banner hidden">
+      <span id="error-text"></span>
+      <button id="retry-btn">重试</button>
+    </div>
+
+    <main id="messages" class="messages"></main>
+
+    <footer class="chat-footer card">
+      <details class="sys-prompt">
+        <summary>系统提示词（可选）</summary>
+        <textarea id="system-prompt" rows="2"
+          placeholder="设定模型的行为、身份或约束……"></textarea>
+      </details>
+      <div class="input-row">
+        <textarea id="prompt-input" rows="1"
+          placeholder="输入消息，Enter 发送，Shift+Enter 换行"></textarea>
+        <button id="send-btn" class="primary">发送</button>
+        <button id="stop-btn" class="danger hidden">停止</button>
+      </div>
+    </footer>
+  </div>
+
+  <dialog id="settings-dialog">
+    <form id="settings-form">
+      <h2>Ollama 设置</h2>
+      <label>地址
+        <input name="ollamaUrl" type="url" placeholder="http://127.0.0.1:11434">
+      </label>
+      <label>连接方式
+        <select name="ollamaMode">
+          <option value="direct">直连</option>
+          <option value="proxy">经本地服务器代理（/ollama）</option>
+        </select>
+      </label>
+      <div class="dialog-actions">
+        <button type="button" id="settings-cancel">取消</button>
+        <button type="submit" class="primary">保存</button>
+      </div>
+    </form>
+  </dialog>
+
   <script src="assets/chat.js"></script>
 </body>
 </html>

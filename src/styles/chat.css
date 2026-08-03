@@ -1,1 +1,170 @@
-/* chat.css — 聊天页专属样式（阶段1 填充） */
+/* chat.css — 聊天页专属样式 */
+
+.chat-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 12px;
+  gap: 10px;
+}
+
+/* 顶栏 */
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+.chat-header h1 {
+  font-size: 17px;
+  margin-right: auto;
+}
+
+.back-link {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.model-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.model-label select {
+  min-width: 180px;
+  max-width: 260px;
+}
+
+/* 错误横幅 */
+#error-banner {
+  justify-content: space-between;
+}
+
+/* 消息区 */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 2px;
+}
+
+.msg {
+  display: flex;
+}
+
+.msg-user {
+  justify-content: flex-end;
+}
+
+.msg-assistant {
+  justify-content: flex-start;
+}
+
+.bubble {
+  max-width: 78%;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.6;
+}
+
+.msg-user .bubble {
+  background: var(--accent);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.msg-assistant .bubble {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+
+/* 底部输入区 */
+.chat-footer {
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sys-prompt summary {
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 13px;
+  user-select: none;
+}
+
+.sys-prompt textarea {
+  width: 100%;
+  margin-top: 6px;
+  resize: vertical;
+}
+
+.input-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.input-row textarea {
+  flex: 1;
+  resize: none;
+  max-height: 160px;
+  line-height: 1.5;
+}
+
+.input-row button {
+  white-space: nowrap;
+}
+
+/* 设置对话框 */
+#settings-dialog {
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  width: min(420px, 90vw);
+}
+
+#settings-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+#settings-dialog h2 {
+  font-size: 16px;
+  margin-bottom: 14px;
+}
+
+#settings-dialog form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#settings-dialog label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}

@@ -140,6 +140,11 @@ label {
   font-size: 13px;
 }
 
+/* 工具类 */
+.hidden {
+  display: none !important;
+}
+
 /* 空态 */
 .empty-state {
   display: flex;
