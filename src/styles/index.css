@@ -1,0 +1,49 @@
+/* index.css — 首页专属样式 */
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 20px;
+}
+
+.page h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.page p {
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.nav-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.nav-card {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  color: var(--text);
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.nav-card:hover {
+  border-color: var(--accent);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.nav-card h2 {
+  margin-bottom: 8px;
+}
+
+.nav-card p {
+  margin: 0;
+  font-size: 13px;
+}
