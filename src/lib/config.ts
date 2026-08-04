@@ -32,7 +32,8 @@ export interface AppSettings {
 const DEFAULT_SETTINGS: AppSettings = {
   siotHost: '10.1.2.3',
   siotWsPort: 1888,
-  siotWsPath: '',
+  // 行空板 SIoT V2 实测端点：ws://<host>:1888/ws（协议版本 4）
+  siotWsPath: '/ws',
   siotWsTls: false,
   siotUser: 'siot',
   siotPwd: 'dfrobot',

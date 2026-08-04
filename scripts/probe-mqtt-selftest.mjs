@@ -16,10 +16,12 @@ const USER = process.argv[3] ?? 'siot'
 const PWD = process.argv[4] ?? 'dfrobot'
 const TOPIC = 'chatweb/probe'
 const PORT = 1888
+const PATH = '/ws' // 行空板 SIoT V2 实测端点路径
 
 const opts = {
   username: USER,
   password: PWD,
+  protocolVersion: 4,
   connectTimeout: 6000,
   reconnectPeriod: 0,
   clean: true,
@@ -29,7 +31,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms))
 
 function connect(prefix) {
   return new Promise((resolve, reject) => {
-    const client = mqtt.connect(`ws://${HOST}:${PORT}`, opts)
+    const client = mqtt.connect(`ws://${HOST}:${PORT}${PATH}`, opts)
     client.on('connect', () => {
       console.log(`${prefix} 连接成功`)
       resolve(client)
