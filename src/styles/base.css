@@ -1,21 +1,30 @@
 /* base.css — 全站共享基础样式：reset、CSS 变量、通用组件 */
 
 :root {
-  --bg: #f5f6f8;
-  --surface: #ffffff;
-  --border: #e0e2e7;
-  --text: #1f2329;
-  --text-secondary: #6b7280;
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
-  --danger: #dc2626;
-  --danger-bg: #fef2f2;
-  --success: #16a34a;
-  --radius: 10px;
-  --radius-sm: 6px;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --bg: #0b1120;
+  --bg-secondary: #0f172a;
+  --surface: rgba(15, 23, 42, 0.75);
+  --surface-solid: #0f172a;
+  --border: rgba(56, 189, 248, 0.12);
+  --border-hover: rgba(56, 189, 248, 0.35);
+  --text: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --accent: #38bdf8;
+  --accent-hover: #0ea5e9;
+  --accent-glow: rgba(56, 189, 248, 0.35);
+  --danger: #f87171;
+  --danger-bg: rgba(248, 113, 113, 0.12);
+  --success: #4ade80;
+  --success-bg: rgba(74, 222, 128, 0.12);
+  --warning: #fbbf24;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+  --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.55);
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
 }
 
 * {
@@ -59,41 +68,50 @@ button {
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
-  padding: 7px 14px;
+  padding: 8px 16px;
   border-radius: var(--radius-sm);
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s, box-shadow 0.2s;
+  backdrop-filter: blur(8px);
 }
 
 button:hover:not(:disabled) {
-  border-color: var(--accent);
+  border-color: var(--border-hover);
   color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.96);
 }
 
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 button.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  border-color: transparent;
+  color: #0b1120;
+  font-weight: 600;
 }
 
 button.primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  color: #fff;
+  background: linear-gradient(135deg, var(--accent-hover), #0284c7);
+  color: #0b1120;
+  box-shadow: 0 0 16px var(--accent-glow);
 }
 
 button.danger {
   color: var(--danger);
-  border-color: var(--danger);
+  border-color: rgba(248, 113, 113, 0.3);
   background: transparent;
 }
 
 button.danger:hover:not(:disabled) {
   background: var(--danger-bg);
   color: var(--danger);
+  box-shadow: 0 0 12px rgba(248, 113, 113, 0.25);
 }
 
 input,
@@ -105,14 +123,17 @@ textarea {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 7px 10px;
+  padding: 8px 12px;
   outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  backdrop-filter: blur(8px);
 }
 
 input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
 }
 
 label {
@@ -125,6 +146,14 @@ label {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.card:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-hover), 0 0 24px rgba(56, 189, 248, 0.08);
+  transform: translateY(-2px);
 }
 
 /* 错误横幅 */
@@ -134,10 +163,11 @@ label {
   gap: 8px;
   background: var(--danger-bg);
   color: var(--danger);
-  border: 1px solid var(--danger);
+  border: 1px solid rgba(248, 113, 113, 0.25);
   border-radius: var(--radius-sm);
-  padding: 8px 12px;
+  padding: 10px 14px;
   font-size: 13px;
+  backdrop-filter: blur(8px);
 }
 
 /* 工具类 */
@@ -149,37 +179,48 @@ label {
 dialog {
   border: none;
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 20px;
+  box-shadow: var(--shadow-hover), 0 0 40px rgba(56, 189, 248, 0.12);
+  padding: 24px;
   width: min(420px, 90vw);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  color: var(--text);
 }
 
 dialog::backdrop {
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(2, 6, 23, 0.7);
+  backdrop-filter: blur(4px);
 }
 
 dialog h2 {
   font-size: 16px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+  color: var(--text);
 }
 
 dialog form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 dialog label {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+}
+
+dialog input,
+dialog select,
+dialog textarea {
+  background: rgba(15, 23, 42, 0.9);
 }
 
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 /* 空态 */
@@ -188,9 +229,63 @@ dialog label {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   height: 100%;
   color: var(--text-secondary);
   text-align: center;
-  padding: 16px;
+  padding: 20px;
+}
+
+/* 状态指示灯（复用） */
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  box-shadow: 0 0 6px currentColor;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.status-dot.online {
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success), 0 0 16px rgba(74, 222, 128, 0.4);
+}
+
+.status-dot.offline {
+  background: var(--danger);
+  box-shadow: 0 0 8px var(--danger), 0 0 16px rgba(248, 113, 113, 0.4);
+}
+
+.status-dot.checking {
+  background: var(--warning);
+  box-shadow: 0 0 8px var(--warning);
+  animation: pulse-glow 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+}
+
+/* 通用滑入动画 */
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slide-in-up 0.35s ease both;
 }

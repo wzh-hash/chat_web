@@ -3,19 +3,79 @@
 .page {
   max-width: 720px;
   margin: 0 auto;
-  padding: 48px 20px;
+  padding: 56px 20px;
 }
 
 .page h1 {
-  font-size: 28px;
-  margin-bottom: 8px;
+  font-size: 32px;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--success));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.page p {
+.page .subtitle {
   color: var(--text-secondary);
+  margin-bottom: 36px;
+  font-size: 15px;
+}
+
+/* 状态预览区 */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
   margin-bottom: 32px;
 }
 
+.status-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 20px;
+  backdrop-filter: blur(12px);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.status-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover), 0 0 24px rgba(56, 189, 248, 0.08);
+  border-color: var(--border-hover);
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.status-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.status-value.online {
+  color: var(--success);
+}
+
+.status-value.offline {
+  color: var(--danger);
+}
+
+/* 导航卡片 */
 .nav-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -28,22 +88,43 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 20px;
+  padding: 24px;
   color: var(--text);
-  transition: border-color 0.15s, transform 0.15s;
+  transition: border-color 0.25s, transform 0.25s ease, box-shadow 0.25s ease;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.06), rgba(74, 222, 128, 0.04));
+  transition: opacity 0.3s;
+  pointer-events: none;
 }
 
 .nav-card:hover {
-  border-color: var(--accent);
+  border-color: var(--border-hover);
   text-decoration: none;
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover), 0 0 28px rgba(56, 189, 248, 0.1);
+}
+
+.nav-card:hover::before {
+  opacity: 1;
 }
 
 .nav-card h2 {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  font-size: 18px;
 }
 
 .nav-card p {
   margin: 0;
   font-size: 13px;
+  color: var(--text-secondary);
 }

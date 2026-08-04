@@ -10,7 +10,25 @@
 <body>
   <main class="page">
     <h1>chat_web</h1>
-    <p>本地工具集合（Ollama 聊天 + SIoT 数据可视化）</p>
+    <p class="subtitle">本地工具集合（Ollama 聊天 + SIoT 数据可视化）</p>
+
+    <section class="status-grid" id="status-grid">
+      <div class="status-card">
+        <span class="status-dot checking" id="ollama-dot"></span>
+        <div class="status-info">
+          <span class="status-label">Ollama</span>
+          <span class="status-value" id="ollama-status">检测中…</span>
+        </div>
+      </div>
+      <div class="status-card">
+        <span class="status-dot checking" id="siot-dot"></span>
+        <div class="status-info">
+          <span class="status-label">SIoT</span>
+          <span class="status-value" id="siot-status">检测中…</span>
+        </div>
+      </div>
+    </section>
+
     <nav class="nav-cards">
       <a class="nav-card" href="chat.html">
         <h2>💬 聊天</h2>

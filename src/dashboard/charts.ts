@@ -4,6 +4,7 @@
  */
 
 import * as echarts from 'echarts/core'
+import { graphic } from 'echarts/core'
 import { LineChart, BarChart, PieChart, GaugeChart, ScatterChart } from 'echarts/charts'
 import {
   GridComponent,
@@ -29,8 +30,27 @@ echarts.use([
   CanvasRenderer,
 ])
 
+/** 霓虹配色（图表系列/图例用） */
+const NEON_COLORS = [
+  '#38bdf8',
+  '#4ade80',
+  '#a78bfa',
+  '#f472b6',
+  '#fbbf24',
+  '#fb923c',
+  '#22d3ee',
+  '#f87171',
+]
+
+/** 暗色主题公用轴样式（axisLabel 由各轴自行指定，避免键冲突） */
+const DARK_AXIS = {
+  axisLine: { lineStyle: { color: 'rgba(148,163,184,0.25)' } },
+  axisTick: { lineStyle: { color: 'rgba(148,163,184,0.2)' } },
+  splitLine: { lineStyle: { color: 'rgba(148,163,184,0.1)' } },
+}
+
 export function initChart(el: HTMLElement): ECharts {
-  return echarts.init(el)
+  return echarts.init(el, undefined, { renderer: 'canvas' })
 }
 
 export function disposeChart(chart: ECharts): void {
@@ -65,21 +85,38 @@ function cartesianOption(type: Exclude<ChartType, "gauge" | "pie">, data: Parsed
   const labels = data.map((d) => d.label)
   const values = data.map((d) => d.value ?? 0)
   const isArea = type === 'area'
+  const isScatter = type === 'scatter'
+  const color = NEON_COLORS[0]
   return {
-    tooltip: { trigger: 'axis' },
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(15,23,42,0.9)',
+      borderColor: 'rgba(56,189,248,0.25)',
+      textStyle: { color: '#e2e8f0' },
+    },
     grid: { left: 52, right: 16, top: 24, bottom: 44 },
     xAxis: {
       type: 'category',
       data: labels,
-      axisLabel: { rotate: labels.length > 10 ? 30 : 0, fontSize: 11 },
+      axisLabel: { rotate: labels.length > 10 ? 30 : 0, fontSize: 11, color: '#94a3b8' },
+      ...DARK_AXIS,
     },
-    yAxis: { type: 'value', scale: true },
+    yAxis: { type: 'value', scale: true, axisLabel: { color: '#94a3b8' }, ...DARK_AXIS },
     series: [
       {
         type: type === 'area' ? 'line' : type,
         smooth: type === 'line' || isArea,
-        symbolSize: 8,
-        areaStyle: isArea ? { opacity: 0.25 } : undefined,
+        symbolSize: isScatter ? 10 : 8,
+        itemStyle: isScatter ? { color: NEON_COLORS[1] } : undefined,
+        lineStyle: { width: 2, color },
+        areaStyle: isArea
+          ? {
+              color: new graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: 'rgba(56,189,248,0.35)' },
+                { offset: 1, color: 'rgba(56,189,248,0.02)' },
+              ]),
+            }
+          : undefined,
         data: values,
       },
     ],
@@ -97,18 +134,21 @@ function gaugeOption(data: ParsedDatum[]): EChartsCoreOption {
         type: 'gauge',
         min: 0,
         max,
-        progress: { show: true, width: 14 },
-        axisLine: { lineStyle: { width: 14 } },
-        axisTick: { splitNumber: 5 },
-        splitLine: { length: 12 },
-        axisLabel: { fontSize: 10 },
+        progress: { show: true, width: 14, itemStyle: { color: '#38bdf8' } },
+        axisLine: { lineStyle: { width: 14, color: [[1, 'rgba(148,163,184,0.15)']] } },
+        axisTick: { splitNumber: 5, lineStyle: { color: 'rgba(148,163,184,0.3)' } },
+        splitLine: { length: 12, lineStyle: { color: 'rgba(148,163,184,0.25)' } },
+        axisLabel: { fontSize: 10, color: '#94a3b8' },
         detail: {
           valueAnimation: true,
           fontSize: 22,
           formatter: '{value}',
           offsetCenter: [0, '60%'],
+          color: '#e2e8f0',
         },
-        data: [{ value: last }],
+        data: [{ value: last, itemStyle: { color: '#38bdf8' } }],
+        pointer: { itemStyle: { color: '#4ade80' } },
+        anchor: { itemStyle: { color: '#4ade80' } },
       },
     ],
   }
@@ -122,15 +162,22 @@ function pieOption(data: ParsedDatum[]): EChartsCoreOption {
     counts.set(name, (counts.get(name) ?? 0) + 1)
   }
   return {
-    tooltip: { trigger: 'item' },
-    legend: { bottom: 0, type: 'scroll' },
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: 'rgba(15,23,42,0.9)',
+      borderColor: 'rgba(56,189,248,0.25)',
+      textStyle: { color: '#e2e8f0' },
+    },
+    legend: { bottom: 0, type: 'scroll', textStyle: { color: '#94a3b8' } },
     series: [
       {
         type: 'pie',
         radius: '62%',
         center: ['50%', '46%'],
         data: [...counts.entries()].map(([name, value]) => ({ name, value })),
-        label: { formatter: '{b}: {c}', fontSize: 11 },
+        label: { formatter: '{b}: {c}', fontSize: 11, color: '#e2e8f0' },
+        itemStyle: { borderColor: '#0b1120', borderWidth: 2 },
+        color: NEON_COLORS,
       },
     ],
   }
