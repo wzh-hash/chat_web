@@ -12,8 +12,9 @@
     <header class="dash-header card">
       <a class="back-link" href="index.html">← 首页</a>
       <h1>数据仪表盘</h1>
+      <span id="conn-status" class="conn-status" data-state="stopped">未连接</span>
       <div class="header-controls">
-        <button id="settings-btn" title="SIoT 设置">⚙ 设置</button>
+        <button id="settings-btn" title="SIoT 连接设置">⚙ 设置</button>
         <button id="add-btn" class="primary">+ 添加图表</button>
       </div>
     </header>
@@ -43,20 +44,15 @@
           <option value="scatter">散点图</option>
         </select>
       </label>
-      <label>SIoT topic（必填）
+      <label>SIoT topic（必填，订阅后实时推送）
         <input name="topic" placeholder="例如 xzr/001">
       </label>
       <label>JSON 字段（可选）
-        <input name="jsonField" placeholder="Content 为 JSON 时选取的字段，如 temp">
+        <input name="jsonField" placeholder="消息为 JSON 时选取的字段，如 temp">
       </label>
-      <div class="form-row">
-        <label>最近条数
-          <input name="psize" type="number" min="1" max="200" value="50">
-        </label>
-        <label>刷新间隔（毫秒，0=不刷新）
-          <input name="refreshMs" type="number" min="0" value="5000">
-        </label>
-      </div>
+      <label>显示条数（缓冲上限，最多 200）
+        <input name="psize" type="number" min="1" max="200" value="50">
+      </label>
       <p id="card-error" class="form-error hidden"></p>
       <div class="dialog-actions">
         <button type="button" id="card-cancel">取消</button>
@@ -65,28 +61,37 @@
     </form>
   </dialog>
 
-  <!-- SIoT 设置对话框 -->
+  <!-- SIoT 连接设置对话框（MQTT over WebSocket） -->
   <dialog id="settings-dialog">
     <form id="settings-form">
-      <h2>SIoT 设置</h2>
-      <label>地址
-        <input name="siotUrl" type="url" placeholder="http://127.0.0.1:8080">
+      <h2>SIoT 连接设置（MQTT）</h2>
+      <label>主机地址
+        <input name="siotHost" placeholder="10.1.2.3（行空板默认）">
       </label>
-      <label>账号
-        <input name="siotUser" placeholder="siot">
+      <div class="form-row">
+        <label>WebSocket 端口
+          <input name="siotWsPort" type="number" min="1" max="65535" value="1888">
+        </label>
+        <label>路径（可选）
+          <input name="siotWsPath" placeholder="如 /mqtt，留空则根路径">
+        </label>
+      </div>
+      <label class="checkbox-row">
+        <input name="siotWsTls" type="checkbox">
+        启用 TLS（wss://）
       </label>
-      <label>密码
-        <input name="siotPwd" type="password" placeholder="dfrobot">
-      </label>
-      <label>连接方式
-        <select name="siotMode">
-          <option value="direct">直连</option>
-          <option value="proxy">经本地服务器代理（/siot）</option>
-        </select>
-      </label>
+      <div class="form-row">
+        <label>账号
+          <input name="siotUser" placeholder="siot">
+        </label>
+        <label>密码
+          <input name="siotPwd" type="password" placeholder="dfrobot">
+        </label>
+      </div>
+      <p class="form-hint">提示：连接参数可用 `node scripts/probe-mqtt.mjs &lt;主机IP&gt; &lt;topic&gt;` 探测</p>
       <div class="dialog-actions">
         <button type="button" id="settings-cancel">取消</button>
-        <button type="submit" class="primary">保存</button>
+        <button type="submit" class="primary">保存并连接</button>
       </div>
     </form>
   </dialog>

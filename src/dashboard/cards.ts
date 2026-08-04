@@ -1,9 +1,10 @@
 /**
- * cards.ts — 图表卡片控制器
- * 职责：卡片 DOM 构建、定时轮询生命周期、错误/空态展示、图表实例管理
+ * cards.ts — 图表卡片控制器（MQTT 订阅版）
+ * 职责：卡片 DOM、订阅生命周期、消息缓冲（上限 psize）、节流渲染、空态展示
+ * 连接状态由 dashboard.ts 全局展示（单例连接），卡片只展示自身数据状态
  */
 
-import { getMessages } from './siot'
+import { siotMqtt, type MqttMessage } from './mqtt'
 import { parseContent, type ParsedDatum } from './parse'
 import { initChart, disposeChart, updateChart, hasUsableData } from './charts'
 import type { ChartCardConfig } from './storage'
@@ -22,8 +23,12 @@ export class CardController {
   private chartHolder: HTMLElement
   private overlay: HTMLElement
   private statusEl: HTMLElement
-  private timer: ReturnType<typeof setTimeout> | null = null
-  private inFlight = false
+  private buffer: ParsedDatum[] = []
+  private counter = 0
+  private dirty = false
+  private rafId: number | null = null
+  private flushTimer: ReturnType<typeof setTimeout> | null = null
+  private detached = false
 
   constructor(container: HTMLElement, cfg: ChartCardConfig, deps: CardDeps) {
     this.cfg = cfg
@@ -55,7 +60,7 @@ export class CardController {
 
     this.chart = initChart(this.chartHolder)
 
-    // 卡片大小变化时自适应
+    // 卡片大小变化时图表自适应
     const ro = new ResizeObserver(() => this.chart.resize())
     ro.observe(this.chartHolder)
 
@@ -67,40 +72,73 @@ export class CardController {
     })
   }
 
-  /** 立即刷新一次，并按 refreshMs 排下一次（setTimeout 链，请求完成才排，天然防重叠） */
+  /** 注册订阅（页面初始化/重建时调用） */
   start(): void {
-    void this.refresh()
-    this.schedule()
-  }
-
-  /** 暂停轮询（页面隐藏时调用） */
-  pause(): void {
-    if (this.timer !== null) {
-      clearTimeout(this.timer)
-      this.timer = null
+    if (!this.cfg.topic.trim()) {
+      this.showOverlay('未设置 topic：点击"编辑"配置数据源')
+      return
     }
+    siotMqtt.subscribe(this.cfg.topic, this.onMessage)
+    this.setStatus('等待数据…', false)
   }
 
-  /** 恢复轮询：立即刷新并重新排期 */
-  resume(): void {
-    void this.refresh()
-    this.schedule()
+  /** 换服务器/清空历史时调用（不清连接、保留订阅） */
+  clearBuffer(): void {
+    this.buffer = []
+    this.counter = 0
+    this.setStatus('等待数据…', false)
+    this.showOverlay('等待数据…')
+    this.markDirty()
   }
 
-  /** 销毁：清定时器、释放图表、移除 DOM */
+  /** 销毁：退订、释放图表、移除 DOM */
   stop(): void {
-    this.pause()
+    this.detached = true
+    siotMqtt.unsubscribe(this.cfg.topic, this.onMessage)
+    if (this.rafId !== null) cancelAnimationFrame(this.rafId)
+    if (this.flushTimer !== null) clearTimeout(this.flushTimer)
     disposeChart(this.chart)
     this.el.remove()
   }
 
-  private schedule(): void {
-    this.pause()
-    if (this.cfg.refreshMs <= 0) return
-    this.timer = setTimeout(() => {
-      void this.refresh()
-      this.schedule()
-    }, this.cfg.refreshMs)
+  // ---- 内部 ----
+
+  private onMessage = (msg: MqttMessage): void => {
+    if (this.detached) return
+    this.buffer.push(parseContent(msg.content, msg.created, ++this.counter, this.cfg.jsonField))
+    if (this.buffer.length > this.cfg.psize) this.buffer.shift()
+    this.setStatus(`${this.buffer.length} 条`, false)
+    this.markDirty()
+  }
+
+  /** 合并渲染：raf 处理突发（历史重放），setTimeout 兜底后台 tab */
+  private markDirty(): void {
+    if (this.dirty) return
+    this.dirty = true
+    this.rafId = requestAnimationFrame(() => this.flush())
+    if (this.flushTimer === null) {
+      this.flushTimer = setTimeout(() => this.flush(), 250)
+    }
+  }
+
+  private flush(): void {
+    this.dirty = false
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId)
+      this.rafId = null
+    }
+    if (this.flushTimer !== null) {
+      clearTimeout(this.flushTimer)
+      this.flushTimer = null
+    }
+    if (this.detached) return
+
+    if (!hasUsableData(this.cfg.type, this.buffer)) {
+      this.showOverlay('等待有效数据…')
+      return
+    }
+    this.hideOverlay()
+    updateChart(this.chart, this.cfg.type, this.buffer)
   }
 
   private showOverlay(text: string): void {
@@ -115,40 +153,5 @@ export class CardController {
   private setStatus(text: string, isError: boolean): void {
     this.statusEl.textContent = text
     this.statusEl.classList.toggle('is-error', isError)
-  }
-
-  async refresh(): Promise<void> {
-    if (this.inFlight) return
-    this.inFlight = true
-    try {
-      if (!this.cfg.topic.trim()) {
-        this.showOverlay('未设置 topic：点击"编辑"配置数据源')
-        this.setStatus('未配置', true)
-        return
-      }
-
-      // 卡片已被删除/重建时不再操作已销毁的 DOM
-      if (!this.el.isConnected) return
-
-      const msgs = await getMessages(this.cfg.topic, { psize: this.cfg.psize })
-      const data: ParsedDatum[] = msgs
-        .map((m, i) => parseContent(m.Content, m.Created, i + 1, this.cfg.jsonField))
-        .sort((a, b) => a.t - b.t)
-
-      if (!hasUsableData(this.cfg.type, data)) {
-        this.showOverlay('暂无有效数据（该 topic 无数据或类型不匹配）')
-        this.setStatus(`最近 ${msgs.length} 条`, false)
-        return
-      }
-
-      updateChart(this.chart, this.cfg.type, data)
-      this.hideOverlay()
-      this.setStatus(`最近 ${data.length} 条`, false)
-    } catch (err) {
-      // 保留旧图表，仅显示错误状态；下个轮询周期自动恢复
-      this.setStatus((err as Error).message, true)
-    } finally {
-      this.inFlight = false
-    }
   }
 }

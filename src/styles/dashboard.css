@@ -33,6 +33,31 @@
   gap: 8px;
 }
 
+/* 全局连接状态 */
+.conn-status {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--border);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.conn-status[data-state='connecting'] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.conn-status[data-state='connected'] {
+  background: #dcfce7;
+  color: var(--success);
+}
+
+.conn-status[data-state='error'] {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
 /* 卡片网格 */
 .grid {
   display: grid;
@@ -122,7 +147,19 @@
   flex: 1;
 }
 
+.checkbox-row {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+  cursor: pointer;
+}
+
 .form-error {
   color: var(--danger);
   font-size: 13px;
+}
+
+.form-hint {
+  color: var(--text-secondary);
+  font-size: 12px;
 }
