@@ -31,11 +31,20 @@
 
     <nav class="nav-cards">
       <a class="nav-card" href="chat.html">
-        <h2>💬 聊天</h2>
+        <div class="nav-icon nav-icon-terminal">
+          <span class="term-prompt">&gt;</span>
+          <span class="term-cursor">_</span>
+        </div>
+        <h2>终端对话</h2>
         <p>调用本地 Ollama 模型对话</p>
       </a>
       <a class="nav-card" href="dashboard.html">
-        <h2>📊 数据仪表盘</h2>
+        <div class="nav-icon nav-icon-chart">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <h2>数据监控</h2>
         <p>SIoT v2 多 topic 数据可视化</p>
       </a>
     </nav>

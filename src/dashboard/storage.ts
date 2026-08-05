@@ -4,6 +4,8 @@
  *
  * v2 变更：删除 refreshMs（MQTT 实时推送，无需轮询间隔），
  *   psize 语义改为"缓冲条数上限"；读取 v1 数据时自动迁移（丢弃 refreshMs）。
+ * v3 变更：新增 chart 类型 value / control / image；
+ *   ChartCardConfig 扩展 unit / minValue / maxValue / actions。
  */
 
 import {
@@ -13,7 +15,7 @@ import {
   DEFAULT_PSIZE,
 } from '../lib/config'
 
-export type ChartType = 'line' | 'area' | 'bar' | 'pie' | 'gauge' | 'scatter'
+export type ChartType = 'line' | 'area' | 'bar' | 'pie' | 'gauge' | 'scatter' | 'value' | 'control' | 'image'
 
 export const CHART_TYPES: readonly ChartType[] = [
   'line',
@@ -22,6 +24,9 @@ export const CHART_TYPES: readonly ChartType[] = [
   'pie',
   'gauge',
   'scatter',
+  'value',
+  'control',
+  'image',
 ]
 
 export interface ChartCardConfig {
@@ -32,7 +37,20 @@ export interface ChartCardConfig {
   /** 缓冲条数上限（保留最近 N 条） */
   psize: number
   jsonField?: string
+  /** 数值展示单位 */
+  unit?: string
+  /** 告警下限（仅数值类生效） */
+  minValue?: number
+  /** 告警上限（仅数值类生效） */
+  maxValue?: number
+  /** 控制指令按钮列表 */
+  actions?: { label: string; msg: string }[]
 }
+
+const DEFAULT_ACTIONS: { label: string; msg: string }[] = [
+  { label: '开', msg: 'on' },
+  { label: '关', msg: 'off' },
+]
 
 export function defaultConfig(): ChartCardConfig {
   return {
@@ -50,17 +68,37 @@ function clampInt(v: unknown, fallback: number, min: number, max: number): numbe
   return Math.min(max, Math.max(min, Math.round(n)))
 }
 
+function sanitizeActions(raw: unknown): { label: string; msg: string }[] | undefined {
+  if (!Array.isArray(raw)) return undefined
+  const arr = raw
+    .filter((o): o is { label: string; msg: string } => {
+      return (
+        o !== null &&
+        typeof o === 'object' &&
+        typeof (o as Record<string, unknown>).label === 'string' &&
+        typeof (o as Record<string, unknown>).msg === 'string'
+      )
+    })
+    .map((o) => ({ label: o.label, msg: o.msg }))
+  return arr.length > 0 ? arr : undefined
+}
+
 function sanitize(raw: unknown): ChartCardConfig | null {
   if (raw === null || typeof raw !== 'object') return null
   const o = raw as Partial<ChartCardConfig>
   const type = CHART_TYPES.includes(o.type as ChartType) ? (o.type as ChartType) : 'line'
+  const psize = type === 'image' ? 1 : clampInt(o.psize, DEFAULT_PSIZE, 1, 200)
   return {
     id: typeof o.id === 'string' && o.id ? o.id : uid(),
     title: typeof o.title === 'string' ? o.title : '图表',
     type,
     topic: typeof o.topic === 'string' ? o.topic : '',
-    psize: clampInt(o.psize, DEFAULT_PSIZE, 1, 200),
+    psize,
     jsonField: typeof o.jsonField === 'string' && o.jsonField ? o.jsonField : undefined,
+    unit: typeof o.unit === 'string' && o.unit ? o.unit : undefined,
+    minValue: typeof o.minValue === 'number' && Number.isFinite(o.minValue) ? o.minValue : undefined,
+    maxValue: typeof o.maxValue === 'number' && Number.isFinite(o.maxValue) ? o.maxValue : undefined,
+    actions: sanitizeActions(o.actions) ?? (type === 'control' ? DEFAULT_ACTIONS : undefined),
   }
 }
 

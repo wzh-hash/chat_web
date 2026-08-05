@@ -1,13 +1,16 @@
 /**
  * chat.ts — 聊天页入口
  * 职责：DOM 绑定、会话状态（多轮上下文）、流式渲染、停止/清空、设置对话框
+ * 新增：SIoT 实时数据采集插入对话
  */
 
 import type { ChatMessage } from '../lib/types'
 import { loadSettings, saveSettings } from '../lib/config'
 import { listModels, chatStream } from './ollama'
+import { collectSiotData } from '../lib/siot-common'
 
 const STORAGE_KEY_SYSTEM_PROMPT = 'chatweb.systemprompt.v1'
+const STORAGE_KEY_SIOT_TOPICS = 'chatweb.siot-topics.v1'
 
 // ---- DOM 引用 ----
 const modelSelect = document.getElementById('model-select') as HTMLSelectElement
@@ -24,6 +27,15 @@ const settingsBtn = document.getElementById('settings-btn') as HTMLButtonElement
 const settingsDialog = document.getElementById('settings-dialog') as HTMLDialogElement
 const settingsForm = document.getElementById('settings-form') as HTMLFormElement
 const settingsCancel = document.getElementById('settings-cancel') as HTMLButtonElement
+
+// SIoT 浮层
+const siotBtn = document.getElementById('siot-btn') as HTMLButtonElement
+const siotPopover = document.getElementById('siot-popover') as HTMLElement
+const siotTopicInput = document.getElementById('siot-topic') as HTMLInputElement
+const siotTopicList = document.getElementById('siot-topic-list') as HTMLDataListElement
+const siotDurationSelect = document.getElementById('siot-duration') as HTMLSelectElement
+const siotStartBtn = document.getElementById('siot-start') as HTMLButtonElement
+const siotCloseBtn = document.getElementById('siot-close') as HTMLButtonElement
 
 // ---- 会话状态 ----
 let history: ChatMessage[] = []
@@ -161,6 +173,12 @@ function openSettings(): void {
   const form = settingsForm as unknown as Record<string, HTMLInputElement | HTMLSelectElement>
   ;(form.ollamaUrl as HTMLInputElement).value = s.ollamaUrl
   ;(form.ollamaMode as HTMLSelectElement).value = s.ollamaMode
+  ;(form.siotHost as HTMLInputElement).value = s.siotHost
+  ;(form.siotWsPort as HTMLInputElement).value = String(s.siotWsPort)
+  ;(form.siotWsPath as HTMLInputElement).value = s.siotWsPath
+  ;(form.siotWsTls as HTMLInputElement).checked = s.siotWsTls
+  ;(form.siotUser as HTMLInputElement).value = s.siotUser
+  ;(form.siotPwd as HTMLInputElement).value = s.siotPwd
   settingsDialog.showModal()
 }
 
@@ -169,8 +187,123 @@ function saveSettingsFromForm(): void {
   const s = loadSettings()
   s.ollamaUrl = (form.ollamaUrl as HTMLInputElement).value.trim() || s.ollamaUrl
   s.ollamaMode = (form.ollamaMode as HTMLSelectElement).value === 'proxy' ? 'proxy' : 'direct'
+  s.siotHost = (form.siotHost as HTMLInputElement).value.trim() || s.siotHost
+  s.siotWsPort = Math.max(1, Number((form.siotWsPort as HTMLInputElement).value) || s.siotWsPort)
+  s.siotWsPath = (form.siotWsPath as HTMLInputElement).value.trim()
+  s.siotWsTls = (form.siotWsTls as HTMLInputElement).checked
+  s.siotUser = (form.siotUser as HTMLInputElement).value.trim() || s.siotUser
+  s.siotPwd = (form.siotPwd as HTMLInputElement).value || s.siotPwd
   saveSettings(s)
   void refreshModels() // 切换模式/地址后重拉模型
+}
+
+// ---- SIoT topic 历史 ----
+function loadSiotTopics(): string[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_SIOT_TOPICS)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as unknown
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter((s): s is string => typeof s === 'string')
+  } catch {
+    return []
+  }
+}
+
+function saveSiotTopic(topic: string): void {
+  if (!topic) return
+  let topics = loadSiotTopics()
+  topics = topics.filter((t) => t !== topic)
+  topics.unshift(topic)
+  if (topics.length > 10) topics = topics.slice(0, 10)
+  try {
+    localStorage.setItem(STORAGE_KEY_SIOT_TOPICS, JSON.stringify(topics))
+  } catch {
+    // 忽略存储失败
+  }
+  refreshTopicDatalist()
+}
+
+function refreshTopicDatalist(): void {
+  const topics = loadSiotTopics()
+  siotTopicList.innerHTML = ''
+  for (const t of topics) {
+    const opt = document.createElement('option')
+    opt.value = t
+    siotTopicList.appendChild(opt)
+  }
+}
+
+// ---- SIoT 采集浮层 ----
+let collecting = false
+
+function toggleSiotPopover(show?: boolean): void {
+  const visible = show !== undefined ? show : siotPopover.classList.contains('hidden')
+  siotPopover.classList.toggle('hidden', !visible)
+  if (visible) {
+    siotTopicInput.focus()
+  }
+}
+
+function formatSiotData(topic: string, durationSec: number, data: { content: string; created: string }[]): string {
+  if (data.length === 0) {
+    return `【SIoT 实时数据 | topic: ${topic} | 该 topic 在 ${durationSec} 秒内未收到数据】`
+  }
+  const lines = data.map((d) => `- ${d.created} → ${d.content}`)
+  return `【SIoT 实时数据 | topic: ${topic} | 采集时间】\n${lines.join('\n')}`
+}
+
+async function startSiotCollect(): Promise<void> {
+  if (collecting) return
+  const topic = siotTopicInput.value.trim()
+  if (!topic) {
+    showError('请输入 topic')
+    return
+  }
+
+  const settings = loadSettings()
+  if (!settings.siotHost) {
+    showError('请先在设置中配置 SIoT')
+    return
+  }
+
+  const durationMs = Number(siotDurationSelect.value)
+  const durationSec = Math.round(durationMs / 1000)
+
+  collecting = true
+  siotStartBtn.disabled = true
+  siotStartBtn.classList.add('collecting')
+  let remaining = durationSec
+  siotStartBtn.textContent = `收集中 ${remaining}s…`
+
+  const countdown = setInterval(() => {
+    remaining -= 1
+    if (remaining > 0) {
+      siotStartBtn.textContent = `收集中 ${remaining}s…`
+    }
+  }, 1000)
+
+  try {
+    const data = await collectSiotData(settings, topic, { durationMs })
+    clearInterval(countdown)
+    saveSiotTopic(topic)
+    toggleSiotPopover(false)
+
+    const prefix = formatSiotData(topic, durationSec, data)
+    const userText = promptInput.value.trim()
+    const fullContent = userText ? `${prefix}\n\n${userText}` : prefix
+    promptInput.value = fullContent
+    promptInput.focus()
+    // 如果输入框有内容，让用户继续编辑后手动发送；如果只有采集数据，也可以直接发送
+  } catch (err) {
+    clearInterval(countdown)
+    showError((err as Error).message || '采集失败')
+  } finally {
+    collecting = false
+    siotStartBtn.disabled = false
+    siotStartBtn.classList.remove('collecting')
+    siotStartBtn.textContent = '开始采集'
+  }
 }
 
 // ---- 初始化 ----
@@ -202,6 +335,12 @@ function init(): void {
     saveSettingsFromForm()
     settingsDialog.close()
   })
+
+  // SIoT 浮层
+  siotBtn.addEventListener('click', () => toggleSiotPopover())
+  siotCloseBtn.addEventListener('click', () => toggleSiotPopover(false))
+  siotStartBtn.addEventListener('click', () => void startSiotCollect())
+  refreshTopicDatalist()
 
   // Enter 发送，Shift+Enter 换行
   promptInput.addEventListener('keydown', (e) => {

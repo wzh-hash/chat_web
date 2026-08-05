@@ -42,6 +42,9 @@
           <option value="pie">饼图（按值分类统计）</option>
           <option value="gauge">仪表盘（最新值）</option>
           <option value="scatter">散点图</option>
+          <option value="value">数值展示</option>
+          <option value="control">控制指令</option>
+          <option value="image">图传画面</option>
         </select>
       </label>
       <label>SIoT topic（必填，订阅后实时推送）
@@ -49,6 +52,20 @@
       </label>
       <label>JSON 字段（可选）
         <input name="jsonField" placeholder="消息为 JSON 时选取的字段，如 temp">
+      </label>
+      <label id="unit-row">单位（可选）
+        <input name="unit" placeholder="如 °C、%">
+      </label>
+      <div class="form-row" id="threshold-row">
+        <label>告警下限（可选）
+          <input name="minValue" type="number" step="any" placeholder="如 0">
+        </label>
+        <label>告警上限（可选）
+          <input name="maxValue" type="number" step="any" placeholder="如 100">
+        </label>
+      </div>
+      <label id="actions-row">控制指令（每行一个，格式 标签=消息）
+        <textarea name="actions" rows="3" placeholder="开=on&#10;关=off"></textarea>
       </label>
       <label>显示条数（缓冲上限，最多 200）
         <input name="psize" type="number" min="1" max="200" value="50">

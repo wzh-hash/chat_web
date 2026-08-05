@@ -118,6 +118,48 @@
   opacity: 1;
 }
 
+.nav-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  color: var(--accent);
+}
+
+.nav-icon-terminal {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  gap: 2px;
+}
+
+.term-prompt {
+  color: var(--accent);
+}
+
+.term-cursor {
+  color: var(--success);
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.nav-icon-chart {
+  color: var(--accent);
+}
+
+.nav-icon-chart svg {
+  stroke: var(--accent);
+}
+
 .nav-card h2 {
   margin-bottom: 10px;
   font-size: 18px;

@@ -26,6 +26,11 @@ const settingsForm = document.getElementById('settings-form') as HTMLFormElement
 const settingsCancel = document.getElementById('settings-cancel') as HTMLButtonElement
 const typeSelect = document.getElementById('card-type') as HTMLSelectElement
 
+// 动态字段行
+const unitRow = document.getElementById('unit-row') as HTMLElement
+const thresholdRow = document.getElementById('threshold-row') as HTMLElement
+const actionsRow = document.getElementById('actions-row') as HTMLElement
+
 // ---- 状态 ----
 const cards = new Map<string, CardController>()
 let editingId: string | null = null
@@ -76,13 +81,21 @@ function openCardDialog(cfg: ChartCardConfig | null): void {
   cardDialogTitle.textContent = editingId ? '编辑图表' : '添加图表'
   cardError.classList.add('hidden')
 
-  const form = cardForm as unknown as Record<string, HTMLInputElement | HTMLSelectElement>
+  const form = cardForm as unknown as Record<string, HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ;(form.title as HTMLInputElement).value = cfg?.title ?? ''
   ;(form.topic as HTMLInputElement).value = cfg?.topic ?? ''
   ;(form.psize as HTMLInputElement).value = String(cfg?.psize ?? 50)
   ;(form.jsonField as HTMLInputElement).value = cfg?.jsonField ?? ''
+  ;(form.unit as HTMLInputElement).value = cfg?.unit ?? ''
+  ;(form.minValue as HTMLInputElement).value =
+    cfg?.minValue !== undefined ? String(cfg.minValue) : ''
+  ;(form.maxValue as HTMLInputElement).value =
+    cfg?.maxValue !== undefined ? String(cfg.maxValue) : ''
+  ;(form.actions as HTMLTextAreaElement).value =
+    cfg?.actions?.map((a) => `${a.label}=${a.msg}`).join('\n') ?? ''
   typeSelect.value = cfg?.type ?? 'line'
 
+  updateDialogFields(typeSelect.value as ChartType)
   cardDialog.showModal()
 }
 
@@ -90,9 +103,36 @@ function closeCardDialog(): void {
   cardDialog.close()
 }
 
+function updateDialogFields(type: ChartType): void {
+  const isValue = type === 'value'
+  const isNumeric = type === 'line' || type === 'area' || type === 'bar' || type === 'gauge' || type === 'scatter' || type === 'value'
+  const isControl = type === 'control'
+
+  unitRow.classList.toggle('hidden', !isValue)
+  thresholdRow.classList.toggle('hidden', !isNumeric)
+  actionsRow.classList.toggle('hidden', !isControl)
+}
+
+typeSelect.addEventListener('change', () => {
+  updateDialogFields(typeSelect.value as ChartType)
+})
+
+function parseActions(text: string): { label: string; msg: string }[] | undefined {
+  const lines = text.split('\n').map((s) => s.trim()).filter(Boolean)
+  const result: { label: string; msg: string }[] = []
+  for (const line of lines) {
+    const idx = line.indexOf('=')
+    if (idx < 0) continue
+    const label = line.slice(0, idx).trim()
+    const msg = line.slice(idx + 1).trim()
+    if (label && msg) result.push({ label, msg })
+  }
+  return result.length > 0 ? result : undefined
+}
+
 cardForm.addEventListener('submit', (e) => {
   e.preventDefault()
-  const form = cardForm as unknown as Record<string, HTMLInputElement | HTMLSelectElement>
+  const form = cardForm as unknown as Record<string, HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   const topic = (form.topic as HTMLInputElement).value.trim()
   if (!topic) {
     cardError.textContent = 'topic 不能为空'
@@ -100,17 +140,28 @@ cardForm.addEventListener('submit', (e) => {
     return
   }
 
+  const type = CHART_TYPES.includes(typeSelect.value as ChartType)
+    ? (typeSelect.value as ChartType)
+    : 'line'
+
+  const minValRaw = (form.minValue as HTMLInputElement).value.trim()
+  const maxValRaw = (form.maxValue as HTMLInputElement).value.trim()
+  const minValue = minValRaw !== '' ? Number(minValRaw) : undefined
+  const maxValue = maxValRaw !== '' ? Number(maxValRaw) : undefined
+
   const cfgs = loadConfigs()
   const existing = editingId ? cfgs.find((c) => c.id === editingId) : undefined
   const cfg: ChartCardConfig = {
     id: existing?.id ?? defaultConfig().id,
     title: (form.title as HTMLInputElement).value.trim() || topic,
-    type: CHART_TYPES.includes(typeSelect.value as ChartType)
-      ? (typeSelect.value as ChartType)
-      : 'line',
+    type,
     topic,
     psize: Math.min(200, Math.max(1, Number((form.psize as HTMLInputElement).value) || 50)),
     jsonField: (form.jsonField as HTMLInputElement).value.trim() || undefined,
+    unit: type === 'value' ? (form.unit as HTMLInputElement).value.trim() || undefined : undefined,
+    minValue: minValue !== undefined && Number.isFinite(minValue) ? minValue : undefined,
+    maxValue: maxValue !== undefined && Number.isFinite(maxValue) ? maxValue : undefined,
+    actions: type === 'control' ? parseActions((form.actions as HTMLTextAreaElement).value) : undefined,
   }
 
   if (existing) {

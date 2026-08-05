@@ -70,7 +70,10 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 6px 4px;
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(56, 189, 248, 0.08);
+  border-radius: var(--radius);
 }
 
 .msg {
@@ -169,7 +172,7 @@
 
 .input-row textarea:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12), 0 0 16px rgba(56, 189, 248, 0.08);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18), 0 0 16px rgba(56, 189, 248, 0.12);
 }
 
 .input-row textarea::placeholder {
@@ -179,6 +182,82 @@
 .input-row button {
   white-space: nowrap;
   font-family: var(--font-mono);
+}
+
+/* SIoT 按钮 */
+.siot-btn {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  border-color: rgba(56, 189, 248, 0.3);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.siot-btn:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.15);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+}
+
+/* SIoT 采集浮层 */
+.siot-popover {
+  position: fixed;
+  bottom: 88px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  width: min(360px, 92vw);
+}
+
+.siot-popover.hidden {
+  display: none;
+}
+
+.siot-popover-inner {
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hover), 0 0 40px rgba(56, 189, 248, 0.12);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+
+.siot-popover-inner label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.siot-popover-inner input,
+.siot-popover-inner select {
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.siot-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+}
+
+.siot-close:hover {
+  color: var(--text);
+}
+
+#siot-start.collecting {
+  animation: pulse-glow 1s ease-in-out infinite;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border-color: transparent;
+  color: #0b1120;
 }
 
 /* 自定义滚动条 */

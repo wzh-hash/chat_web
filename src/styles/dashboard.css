@@ -79,7 +79,7 @@
 /* 卡片网格 */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 14px;
 }
 
@@ -106,6 +106,25 @@
   border-color: var(--border-hover);
 }
 
+/* 告警状态 */
+.chart-card.is-alert {
+  border-color: rgba(248, 113, 113, 0.6);
+  box-shadow: var(--shadow-hover), 0 0 28px rgba(248, 113, 113, 0.15);
+}
+
+.chart-card.is-alert .card-alert {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--danger);
+  background: rgba(248, 113, 113, 0.12);
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
 .card-header {
   display: flex;
   align-items: center;
@@ -120,6 +139,10 @@
   white-space: nowrap;
   font-family: var(--font-mono);
   color: var(--text);
+}
+
+.card-alert {
+  display: none;
 }
 
 .card-status {
@@ -166,6 +189,100 @@
   background: var(--surface-solid);
   z-index: 1;
   border-radius: 0 0 var(--radius) var(--radius);
+}
+
+/* ---- value 类型 ---- */
+.value-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+  padding: 20px;
+}
+
+.value-number {
+  font-size: 56px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+}
+
+.value-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--font-mono);
+}
+
+.value-unit {
+  font-size: 18px;
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+.value-time {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ---- control 类型 ---- */
+.control-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 14px;
+  padding: 20px;
+}
+
+.control-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.control-buttons button {
+  padding: 10px 22px;
+  font-size: 14px;
+  font-family: var(--font-mono);
+}
+
+.control-feedback {
+  font-size: 13px;
+  color: var(--success);
+  font-family: var(--font-mono);
+  min-height: 20px;
+}
+
+/* ---- image 类型 ---- */
+.image-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+  padding: 12px;
+}
+
+.image-display img {
+  max-width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.image-time {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
 }
 
 /* 对话框基础样式见 base.css */
