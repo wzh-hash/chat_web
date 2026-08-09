@@ -78,6 +78,8 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  /* 消息从底部堆叠：最新消息紧贴输入框，避免消息区下方出现大段空白 */
+  justify-content: flex-end;
   gap: 14px;
   padding: 10px 12px;
   background: rgba(15, 23, 42, 0.35);
