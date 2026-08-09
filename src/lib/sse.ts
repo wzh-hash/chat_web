@@ -1,8 +1,6 @@
 /**
- * sse.ts — 流式响应解析器
- * Ollama 返回 NDJSON 裸行（每行一个 JSON 对象），部分实现会带 "data:" 前缀。
- * 这里防御式两种都接受：按行缓冲解析（防分片跨行），行首 "data:" 前缀剥离，
- * 空行与无效 JSON 行跳过。
+ * sse.ts — 流式响应解析器（Ollama 聊天用，chat-core 共享）
+ * 防御式：NDJSON 裸行与 "data:" 前缀都接受，缓冲到换行防分片，无效行跳过
  */
 
 export async function parseSseStream(
@@ -30,7 +28,6 @@ export async function parseSseStream(
     }
   }
 
-  // 处理末尾残余（无换行结尾的最后一行）
   const tail = buffer.trim()
   if (tail) handleLine(tail, onData)
 }
@@ -43,6 +40,6 @@ function handleLine(line: string, onData: (obj: Record<string, unknown>) => void
     const obj = JSON.parse(jsonText) as Record<string, unknown>
     onData(obj)
   } catch {
-    // 单行解析失败则跳过（可能是不完整的数据）
+    // 单行解析失败则跳过
   }
 }

@@ -1,10 +1,10 @@
 /**
- * ollama.ts — Ollama HTTP 客户端
- * API: GET /api/tags 列模型；POST /api/chat 流式对话（NDJSON）
+ * ollama.ts — Ollama HTTP 客户端（聊天共享，chat-core 使用）
+ * API: GET /api/tags 列模型；POST /api/chat 流式对话
  */
 
-import type { ChatMessage } from '../lib/types'
-import { ollamaBase } from '../lib/config'
+import type { ChatMessage } from './types'
+import { ollamaBase } from './config'
 import { parseSseStream } from './sse'
 
 export interface OllamaModel {
@@ -19,14 +19,16 @@ export interface ChatCallbacks {
   onDone?: () => void
 }
 
+const OFFLINE_MSG =
+  '无法连接 Ollama，请确认服务已启动（默认 127.0.0.1:11434）；若服务在远程或遇到跨域限制，请在⚙设置中切换为"经本地服务器代理"'
+
 /** 拉取已安装的模型列表 */
 export async function listModels(): Promise<OllamaModel[]> {
   let res: Response
   try {
     res = await fetch(`${ollamaBase()}/api/tags`)
   } catch {
-    // 服务未启动或跨域(CORS)被拦截都会抛 TypeError
-    throw new Error('无法连接 Ollama，请确认服务已启动（默认 127.0.0.1:11434）；若服务在远程或遇到跨域限制，请在⚙设置中切换为"经本地服务器代理"')
+    throw new Error(OFFLINE_MSG)
   }
   if (!res.ok) throw new Error(`Ollama 返回错误: HTTP ${res.status}`)
   const data = (await res.json()) as { models?: OllamaModel[] }
@@ -50,7 +52,7 @@ export async function chatStream(
     })
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') throw err
-    throw new Error('无法连接 Ollama，请确认服务已启动（默认 127.0.0.1:11434）；若服务在远程或遇到跨域限制，请在⚙设置中切换为"经本地服务器代理"')
+    throw new Error(OFFLINE_MSG)
   }
 
   if (!res.ok) {

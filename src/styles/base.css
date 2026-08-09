@@ -363,21 +363,6 @@ dialog textarea {
   }
 }
 
-/* 通用滑入动画 */
-@keyframes slide-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.slide-in {
-  animation: slide-in-up 0.35s var(--ease-out) both;
-}
 
 /* 尊重系统"减少动态效果"偏好：关闭所有动画与过渡 */
 @media (prefers-reduced-motion: reduce) {
