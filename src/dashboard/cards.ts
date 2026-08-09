@@ -11,7 +11,7 @@ import { parseContent, type ParsedDatum } from './parse'
 import { initChart, disposeChart, updateChart, hasUsableData } from './charts'
 import type { ChartCardConfig } from './storage'
 import type { ECharts } from 'echarts/core'
-import { iconCamera, iconPower } from '../lib/icons'
+import { iconCamera, iconDatabase, iconPower, iconValue } from '../lib/icons'
 
 export interface CardDeps {
   onEdit: (cfg: ChartCardConfig) => void
@@ -119,7 +119,7 @@ export class CardController {
     this.el.classList.remove('is-alert')
     this.alertEl.classList.add('hidden')
     if (this.cfg.type === 'value') {
-      this.valueDom!.numberEl.textContent = '—'
+      this.valueDom!.numberEl.classList.add('hidden')
       this.valueDom!.timeEl.textContent = ''
     } else if (this.cfg.type === 'image') {
       this.imgEl!.src = ''
@@ -200,10 +200,15 @@ export class CardController {
   private initValueDom(): void {
     this.chartHolder.innerHTML = `
       <div class="value-display">
-        <div class="value-number">—</div>
-        <div class="value-meta">
+        <div class="value-number hidden">—</div>
+        <div class="value-meta hidden">
           <span class="value-unit"></span>
           <span class="value-time"></span>
+        </div>
+        <div class="value-placeholder">
+          ${iconValue}
+          <p>等待数据…</p>
+          <p class="sub">设备发送数据后自动显示</p>
         </div>
       </div>
     `
@@ -221,7 +226,7 @@ export class CardController {
     const latest = this.findLatestNumeric()
     if (!latest) {
       this.showOverlay('等待数据…')
-      this.valueDom!.numberEl.textContent = '—'
+      this.valueDom!.numberEl.classList.add('hidden')
       this.valueDom!.timeEl.textContent = ''
       this.el.classList.remove('is-alert')
       this.alertEl.classList.add('hidden')
@@ -230,6 +235,7 @@ export class CardController {
     this.hideOverlay()
     this.valueDom!.numberEl.textContent =
       latest.value !== null ? String(latest.value) : latest.category ?? '—'
+    this.valueDom!.numberEl.classList.remove('hidden')
     this.valueDom!.timeEl.textContent = latest.label
     this.checkAlert()
   }
@@ -287,6 +293,7 @@ export class CardController {
       .join('')
     this.chartHolder.innerHTML = `
       <div class="control-panel">
+        <div class="control-topic">${iconDatabase}<span>${this.escapeHtml(this.cfg.topic)}</span></div>
         <div class="control-buttons">${btnsHtml}</div>
         <div class="control-feedback hidden"></div>
       </div>

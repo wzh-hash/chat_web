@@ -212,6 +212,39 @@
   padding: 20px;
 }
 
+/* 数值等待占位（无数据时） */
+.value-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  border: 1px dashed rgba(56, 189, 248, 0.25);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  background: rgba(15, 23, 42, 0.35);
+  padding: 20px;
+}
+
+.value-placeholder svg {
+  width: 40px;
+  height: 40px;
+  opacity: 0.5;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.value-placeholder p {
+  font-size: 13px;
+  font-family: var(--font-mono);
+}
+
+.value-placeholder p.sub {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
 .value-number {
   font-size: 56px;
   font-weight: 700;
@@ -261,13 +294,42 @@
   padding: 20px;
 }
 
-/* 开关式按钮：图标在上、标签在下，栅格均分（auto-fill 保留轨道，按钮近方形） */
+/* 开关式按钮：图标在上、标签在下；固定轨道 + 居中（按钮组整体居中） */
 .control-buttons {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  grid-template-columns: repeat(auto-fit, 96px);
+  justify-content: center;
   gap: 12px;
   width: 100%;
   max-width: 320px;
+}
+
+/* 控制面板 topic 标识 */
+.control-topic {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.control-topic svg {
+  width: 14px;
+  height: 14px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.control-topic span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
 }
 
 .ctrl-btn {
