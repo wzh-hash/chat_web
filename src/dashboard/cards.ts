@@ -11,6 +11,7 @@ import { parseContent, type ParsedDatum } from './parse'
 import { initChart, disposeChart, updateChart, hasUsableData } from './charts'
 import type { ChartCardConfig } from './storage'
 import type { ECharts } from 'echarts/core'
+import { iconCamera, iconPower } from '../lib/icons'
 
 export interface CardDeps {
   onEdit: (cfg: ChartCardConfig) => void
@@ -122,7 +123,7 @@ export class CardController {
       this.valueDom!.timeEl.textContent = ''
     } else if (this.cfg.type === 'image') {
       this.imgEl!.src = ''
-      this.imgEl!.alt = '等待数据…'
+      this.imgEl!.classList.add('hidden')
       this.imgTimeEl!.textContent = ''
     }
     this.markDirty()
@@ -238,7 +239,12 @@ export class CardController {
   private initImageDom(): void {
     this.chartHolder.innerHTML = `
       <div class="image-display">
-        <img src="" alt="等待数据…">
+        <img class="hidden" src="" alt="图传画面">
+        <div class="image-placeholder">
+          ${iconCamera}
+          <p>等待图像数据…</p>
+          <p class="sub">设备发送图片消息后自动显示</p>
+        </div>
         <div class="image-time"></div>
       </div>
     `
@@ -250,7 +256,7 @@ export class CardController {
     const last = this.buffer[this.buffer.length - 1]
     if (!last) {
       this.showOverlay('等待数据…')
-      this.imgEl!.alt = '等待数据…'
+      this.imgEl!.classList.add('hidden')
       this.imgTimeEl!.textContent = ''
       return
     }
@@ -261,6 +267,7 @@ export class CardController {
       src = `data:image/jpeg;base64,${raw}`
     }
     this.imgEl!.src = src
+    this.imgEl!.classList.remove('hidden')
     this.imgEl!.alt = '图传画面'
     this.imgTimeEl!.textContent = `最新帧 ${last.label}`
   }
@@ -272,7 +279,10 @@ export class CardController {
     const btnsHtml = actions
       .map(
         (a, i) =>
-          `<button class="ctrl-btn" data-idx="${i}" data-msg="${this.escapeHtml(a.msg)}" data-label="${this.escapeHtml(a.label)}">${this.escapeHtml(a.label)}</button>`,
+          `<button class="ctrl-btn" data-idx="${i}" data-msg="${this.escapeHtml(a.msg)}" data-label="${this.escapeHtml(a.label)}">
+            <span class="ctrl-icon">${iconPower}</span>
+            <span class="ctrl-label">${this.escapeHtml(a.label)}</span>
+          </button>`,
       )
       .join('')
     this.chartHolder.innerHTML = `

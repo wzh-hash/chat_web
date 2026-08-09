@@ -261,17 +261,60 @@
   padding: 20px;
 }
 
+/* 开关式按钮：图标在上、标签在下，栅格均分（auto-fill 保留轨道，按钮近方形） */
 .control-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
 }
 
-.control-buttons button {
-  padding: 10px 22px;
-  font-size: 14px;
+.ctrl-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  border-radius: 12px;
+  background: linear-gradient(160deg, rgba(56, 189, 248, 0.12), rgba(56, 189, 248, 0.04));
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.ctrl-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-hover);
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.2);
+  background: linear-gradient(160deg, rgba(56, 189, 248, 0.2), rgba(56, 189, 248, 0.06));
+}
+
+.ctrl-btn:active {
+  transform: scale(0.95);
+}
+
+.ctrl-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent);
+}
+
+.ctrl-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.ctrl-label {
+  font-size: 13px;
   font-family: var(--font-mono);
+  color: var(--text);
 }
 
 .control-feedback {
@@ -300,6 +343,39 @@
   border: 1px solid var(--border);
 }
 
+/* 图传等待占位（无帧时） */
+.image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  border: 1px dashed rgba(56, 189, 248, 0.25);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  background: rgba(15, 23, 42, 0.35);
+  padding: 20px;
+}
+
+.image-placeholder svg {
+  width: 40px;
+  height: 40px;
+  opacity: 0.5;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.image-placeholder p {
+  font-size: 13px;
+  font-family: var(--font-mono);
+}
+
+.image-placeholder p.sub {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
 .image-time {
   font-size: 11px;
   color: var(--text-secondary);
@@ -326,6 +402,38 @@
 .form-error {
   color: var(--danger);
   font-size: 13px;
+}
+
+/* 控制指令行编辑器 */
+#actions-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.action-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.action-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.action-del {
+  padding: 6px 10px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.actions-add {
+  align-self: flex-start;
+  font-size: 12px;
+  padding: 5px 12px;
 }
 
 .form-hint {

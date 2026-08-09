@@ -132,8 +132,7 @@ function openCardDialog(cfg: ChartCardConfig | null): void {
     cfg?.minValue !== undefined ? String(cfg.minValue) : ''
   ;(form.maxValue as HTMLInputElement).value =
     cfg?.maxValue !== undefined ? String(cfg.maxValue) : ''
-  ;(form.actions as HTMLTextAreaElement).value =
-    cfg?.actions?.map((a) => `${a.label}=${a.msg}`).join('\n') ?? ''
+  populateActionEditor(cfg?.actions)
   typeDropdown.setValue(cfg?.type ?? 'line')
 
   updateDialogFields(typeDropdown.getValue() as ChartType)
@@ -154,18 +153,41 @@ function updateDialogFields(type: ChartType): void {
   actionsRow.classList.toggle('hidden', !isControl)
 }
 
-function parseActions(text: string): { label: string; msg: string }[] | undefined {
-  const lines = text.split('\n').map((s) => s.trim()).filter(Boolean)
+// ---- 控制指令行编辑器 ----
+const actionsEditor = document.getElementById('actions-editor') as HTMLElement
+const actionsAddBtn = document.getElementById('actions-add') as HTMLButtonElement
+
+function addActionRow(label = '', msg = ''): void {
+  const row = document.createElement('div')
+  row.className = 'action-row'
+  row.innerHTML = `
+    <input class="action-label" placeholder="按钮名（如 开）" value="">
+    <input class="action-msg" placeholder="消息内容（如 on）" value="">
+    <button type="button" class="action-del danger" title="删除">✕</button>
+  `
+  ;(row.querySelector('.action-label') as HTMLInputElement).value = label
+  ;(row.querySelector('.action-msg') as HTMLInputElement).value = msg
+  ;(row.querySelector('.action-del') as HTMLButtonElement).addEventListener('click', () => row.remove())
+  actionsEditor.appendChild(row)
+}
+
+function populateActionEditor(actions?: { label: string; msg: string }[]): void {
+  actionsEditor.innerHTML = ''
+  const list = actions && actions.length > 0 ? actions : [{ label: '开', msg: 'on' }, { label: '关', msg: 'off' }]
+  for (const a of list) addActionRow(a.label, a.msg)
+}
+
+function collectActions(): { label: string; msg: string }[] | undefined {
   const result: { label: string; msg: string }[] = []
-  for (const line of lines) {
-    const idx = line.indexOf('=')
-    if (idx < 0) continue
-    const label = line.slice(0, idx).trim()
-    const msg = line.slice(idx + 1).trim()
+  for (const row of actionsEditor.querySelectorAll('.action-row')) {
+    const label = (row.querySelector('.action-label') as HTMLInputElement).value.trim()
+    const msg = (row.querySelector('.action-msg') as HTMLInputElement).value.trim()
     if (label && msg) result.push({ label, msg })
   }
   return result.length > 0 ? result : undefined
 }
+
+actionsAddBtn.addEventListener('click', () => addActionRow())
 
 cardForm.addEventListener('submit', (e) => {
   e.preventDefault()
@@ -198,7 +220,7 @@ cardForm.addEventListener('submit', (e) => {
     unit: type === 'value' ? (form.unit as HTMLInputElement).value.trim() || undefined : undefined,
     minValue: minValue !== undefined && Number.isFinite(minValue) ? minValue : undefined,
     maxValue: maxValue !== undefined && Number.isFinite(maxValue) ? maxValue : undefined,
-    actions: type === 'control' ? parseActions((form.actions as HTMLTextAreaElement).value) : undefined,
+    actions: type === 'control' ? collectActions() : undefined,
   }
 
   if (existing) {

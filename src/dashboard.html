@@ -55,8 +55,9 @@
           <input name="maxValue" type="number" step="any" placeholder="如 100">
         </label>
       </div>
-      <label id="actions-row">控制指令（每行一个，格式 标签=消息）
-        <textarea name="actions" rows="3" placeholder="开=on&#10;关=off"></textarea>
+      <label id="actions-row">控制指令
+        <div id="actions-editor"></div>
+        <button type="button" id="actions-add" class="actions-add">+ 添加指令</button>
       </label>
       <label>显示条数（缓冲上限，最多 200）
         <input name="psize" type="number" min="1" max="200" value="50">
