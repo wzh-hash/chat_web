@@ -201,6 +201,37 @@
   border-radius: 0 0 var(--radius) var(--radius);
 }
 
+/* 图表等待占位：虚线框 + 类型图标 + 提示（与 value/image 占位一致） */
+.card-overlay .empty-state {
+  margin: 10px;
+  border: 1px dashed rgba(56, 189, 248, 0.25);
+  border-radius: var(--radius);
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.overlay-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay-icon svg {
+  width: 40px;
+  height: 40px;
+  opacity: 0.5;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.overlay-text {
+  font-size: 13px;
+  font-family: var(--font-mono);
+}
+
+.overlay-sub {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
 /* ---- value 类型 ---- */
 .value-display {
   display: flex;

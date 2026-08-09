@@ -11,7 +11,7 @@ import { parseContent, type ParsedDatum } from './parse'
 import { initChart, disposeChart, updateChart, hasUsableData } from './charts'
 import type { ChartCardConfig } from './storage'
 import type { ECharts } from 'echarts/core'
-import { iconCamera, iconDatabase, iconPower, iconValue } from '../lib/icons'
+import { iconBar, iconCamera, iconDatabase, iconGauge, iconLine, iconPie, iconPower, iconScatter, iconValue } from '../lib/icons'
 
 export interface CardDeps {
   onEdit: (cfg: ChartCardConfig) => void
@@ -64,7 +64,9 @@ export class CardController {
       <div class="chart-body">
         <div class="chart-holder"></div>
         <div class="card-overlay empty-state hidden">
+          <span class="overlay-icon"></span>
           <p class="overlay-text"></p>
+          <p class="overlay-sub">设备发送数据后自动显示</p>
         </div>
       </div>
     `
@@ -74,6 +76,19 @@ export class CardController {
     this.overlay = this.el.querySelector('.card-overlay') as HTMLElement
     this.statusEl = this.el.querySelector('.card-status') as HTMLElement
     this.alertEl = this.el.querySelector('.card-alert') as HTMLElement
+    // 各图表类型等待占位图标（ECharts 六类）
+    const typeIcon: Record<string, string> = {
+      line: iconLine,
+      area: iconLine,
+      bar: iconBar,
+      pie: iconPie,
+      gauge: iconGauge,
+      scatter: iconScatter,
+    }
+    const icon = typeIcon[cfg.type]
+    if (icon) {
+      ;(this.overlay.querySelector('.overlay-icon') as HTMLElement).innerHTML = icon
+    }
     ;(this.el.querySelector('.card-title') as HTMLElement).textContent = cfg.title || cfg.topic || '图表'
 
     if (isEchartType(cfg.type)) {
@@ -103,11 +118,15 @@ export class CardController {
       return
     }
     if (!this.cfg.topic.trim()) {
-      this.showOverlay('未设置 topic：点击"编辑"配置数据源')
+      this.showOverlay('未设置 topic', '点击"编辑"配置数据源')
       return
     }
     siotMqtt.subscribe(this.cfg.topic, this.onMessage)
     this.setStatus('等待数据…', false)
+    // 初始等待占位：无数据时立即显示（避免空白画布），首条数据到达后自动隐藏
+    if (isEchartType(this.cfg.type)) {
+      this.showOverlay('等待数据…')
+    }
   }
 
   /** 换服务器/清空历史时调用（不清连接、保留订阅） */
@@ -115,7 +134,10 @@ export class CardController {
     this.buffer = []
     this.counter = 0
     this.setStatus('等待数据…', false)
-    this.showOverlay('等待数据…')
+    // value/image 用内部占位，仅 ECharts 类型显示遮罩占位
+    if (this.cfg.type !== 'value' && this.cfg.type !== 'image') {
+      this.showOverlay('等待数据…')
+    }
     this.el.classList.remove('is-alert')
     this.alertEl.classList.add('hidden')
     if (this.cfg.type === 'value') {
@@ -187,7 +209,7 @@ export class CardController {
     if (this.cfg.type === 'control') return
 
     if (!hasUsableData(this.cfg.type, this.buffer)) {
-      this.showOverlay('等待有效数据…')
+      this.showOverlay('等待数据…')
       return
     }
     this.hideOverlay()
@@ -225,7 +247,6 @@ export class CardController {
   private flushValue(): void {
     const latest = this.findLatestNumeric()
     if (!latest) {
-      this.showOverlay('等待数据…')
       this.valueDom!.numberEl.classList.add('hidden')
       this.valueDom!.timeEl.textContent = ''
       this.el.classList.remove('is-alert')
@@ -261,7 +282,6 @@ export class CardController {
   private flushImage(): void {
     const last = this.buffer[this.buffer.length - 1]
     if (!last) {
-      this.showOverlay('等待数据…')
       this.imgEl!.classList.add('hidden')
       this.imgTimeEl!.textContent = ''
       return
@@ -349,8 +369,9 @@ export class CardController {
 
   // ---- DOM 辅助 ----
 
-  private showOverlay(text: string): void {
+  private showOverlay(text: string, sub = '设备发送数据后自动显示'): void {
     ;(this.overlay.querySelector('.overlay-text') as HTMLElement).textContent = text
+    ;(this.overlay.querySelector('.overlay-sub') as HTMLElement).textContent = sub
     this.overlay.classList.remove('hidden')
   }
 

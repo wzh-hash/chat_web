@@ -48,3 +48,23 @@ export const iconCamera = S(
 export const iconPower = S(
   `<path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/>`,
 )
+
+export const iconLine = S(
+  `<polyline points="3 17 8 11 13 15 21 6"/>`,
+)
+
+export const iconBar = S(
+  `<line x1="6" y1="20" x2="6" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="13"/>`,
+)
+
+export const iconPie = S(
+  `<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>`,
+)
+
+export const iconGauge = S(
+  `<path d="M12 15l4-6"/><path d="M3.5 19a9 9 0 1 1 17 0"/>`,
+)
+
+export const iconScatter = S(
+  `<circle cx="6" cy="14" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="15" cy="19" r="2"/><circle cx="9" cy="9" r="2"/>`,
+)
