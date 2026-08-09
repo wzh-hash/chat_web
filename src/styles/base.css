@@ -289,3 +289,103 @@ dialog textarea {
 .slide-in {
   animation: slide-in-up 0.35s ease both;
 }
+
+/* ---- 下拉组件（ui-dropdown） ---- */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-trigger {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.dropdown-trigger::after {
+  content: '▾';
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.dropdown.open .dropdown-trigger::after {
+  transform: rotate(180deg);
+}
+
+.dropdown-trigger:hover:not(:disabled) {
+  border-color: var(--border-hover);
+}
+
+.dropdown-trigger:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+  outline: none;
+}
+
+.dropdown-list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 6px;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-hover), 0 0 24px rgba(56, 189, 248, 0.1);
+  max-height: 240px;
+  overflow-y: auto;
+  transform-origin: top center;
+  transform: scaleY(0.95);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.dropdown-list.open {
+  transform: scaleY(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dropdown-item {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  transition: background 0.15s, color 0.15s;
+}
+
+.dropdown-item:hover,
+.dropdown-item.active {
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--accent);
+}
+
+/* 首页设置按钮 */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.settings-btn {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-family: var(--font-mono);
+}

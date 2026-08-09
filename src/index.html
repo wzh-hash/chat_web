@@ -9,7 +9,10 @@
 </head>
 <body>
   <main class="page">
-    <h1>chat_web</h1>
+    <div class="page-header">
+      <h1>chat_web</h1>
+      <button type="button" id="settings-btn" class="settings-btn" title="设置">⚙ 设置</button>
+    </div>
     <p class="subtitle">本地工具集合（Ollama 聊天 + SIoT 数据可视化）</p>
 
     <section class="status-grid" id="status-grid">
@@ -49,6 +52,32 @@
       </a>
     </nav>
   </main>
+
+  <dialog id="settings-dialog">
+    <form id="settings-form">
+      <h2>设置</h2>
+      <fieldset>
+        <legend>界面标题</legend>
+        <label>首页标题
+          <input name="homeTitle" type="text" placeholder="chat_web">
+        </label>
+        <label>首页副标题
+          <input name="homeSubtitle" type="text" placeholder="本地工具集合…">
+        </label>
+        <label>导航卡片 — 聊天
+          <input name="navChat" type="text" placeholder="终端对话">
+        </label>
+        <label>导航卡片 — 仪表盘
+          <input name="navDash" type="text" placeholder="数据监控">
+        </label>
+      </fieldset>
+      <div class="dialog-actions">
+        <button type="button" id="settings-cancel">取消</button>
+        <button type="submit" class="primary">保存</button>
+      </div>
+    </form>
+  </dialog>
+
   <script src="assets/index.js"></script>
 </body>
 </html>

@@ -1,10 +1,11 @@
 /**
  * dashboard.ts — 仪表盘页入口（MQTT 订阅版）
- * 职责：卡片网格（增/删/改）、全局连接状态、SIoT 连接设置、
- *       设置变更时重连并清空各卡缓冲（防新旧数据混合）
+ * 职责：卡片网格、全局连接状态、SIoT 连接设置、悬浮球聊天、自定义标题
  */
 
-import { loadSettings, saveSettings } from '../lib/config'
+import { loadSettings, saveSettings, loadTitles, saveTitles, type PageTitles } from '../lib/config'
+import { createDropdown } from '../lib/ui-dropdown'
+import { createChatWidget } from '../lib/chat-core'
 import { loadConfigs, saveConfigs, defaultConfig, CHART_TYPES } from './storage'
 import type { ChartCardConfig, ChartType } from './storage'
 import { CardController } from './cards'
@@ -24,12 +25,46 @@ const cardError = document.getElementById('card-error') as HTMLElement
 const settingsDialog = document.getElementById('settings-dialog') as HTMLDialogElement
 const settingsForm = document.getElementById('settings-form') as HTMLFormElement
 const settingsCancel = document.getElementById('settings-cancel') as HTMLButtonElement
-const typeSelect = document.getElementById('card-type') as HTMLSelectElement
+const typeWrap = document.getElementById('card-type-wrap') as HTMLElement
 
 // 动态字段行
 const unitRow = document.getElementById('unit-row') as HTMLElement
 const thresholdRow = document.getElementById('threshold-row') as HTMLElement
 const actionsRow = document.getElementById('actions-row') as HTMLElement
+
+// 悬浮球
+const chatBall = document.getElementById('chat-ball') as HTMLButtonElement
+const chatWindow = document.getElementById('chat-window') as HTMLElement
+const chatWindowHeader = document.getElementById('chat-window-header') as HTMLElement
+const chatWindowMinimize = document.getElementById('chat-window-minimize') as HTMLButtonElement
+const chatWidgetMount = document.getElementById('chat-widget-mount') as HTMLElement
+
+// ---- 标题应用 ----
+function applyTitles(): void {
+  const t = loadTitles()
+  const h1 = document.querySelector('.dash-header h1') as HTMLElement | null
+  if (h1) h1.textContent = t.dashboard
+}
+
+applyTitles()
+
+// ---- 下拉组件：图表类型 ----
+const typeDropdown = createDropdown({
+  options: [
+    { value: 'line', label: '折线图' },
+    { value: 'area', label: '面积图' },
+    { value: 'bar', label: '柱状图' },
+    { value: 'pie', label: '饼图（按值分类统计）' },
+    { value: 'gauge', label: '仪表盘（最新值）' },
+    { value: 'scatter', label: '散点图' },
+    { value: 'value', label: '数值展示' },
+    { value: 'control', label: '控制指令' },
+    { value: 'image', label: '图传画面' },
+  ],
+  value: 'line',
+  onChange: (v) => updateDialogFields(v as ChartType),
+})
+typeWrap.appendChild(typeDropdown.el)
 
 // ---- 状态 ----
 const cards = new Map<string, CardController>()
@@ -55,14 +90,15 @@ function renderGrid(): void {
   cards.clear()
 
   const cfgs = loadConfigs()
-  for (const cfg of cfgs) {
+  cfgs.forEach((cfg, index) => {
     const card = new CardController(gridEl, cfg, {
       onEdit: (c) => openCardDialog(c),
       onDelete: (id) => deleteCard(id),
     })
+    card.el.style.animationDelay = `${index * 60}ms`
     cards.set(cfg.id, card)
     card.start()
-  }
+  })
   emptyHint.classList.toggle('hidden', cfgs.length > 0)
 }
 
@@ -93,9 +129,9 @@ function openCardDialog(cfg: ChartCardConfig | null): void {
     cfg?.maxValue !== undefined ? String(cfg.maxValue) : ''
   ;(form.actions as HTMLTextAreaElement).value =
     cfg?.actions?.map((a) => `${a.label}=${a.msg}`).join('\n') ?? ''
-  typeSelect.value = cfg?.type ?? 'line'
+  typeDropdown.setValue(cfg?.type ?? 'line')
 
-  updateDialogFields(typeSelect.value as ChartType)
+  updateDialogFields(typeDropdown.getValue() as ChartType)
   cardDialog.showModal()
 }
 
@@ -112,10 +148,6 @@ function updateDialogFields(type: ChartType): void {
   thresholdRow.classList.toggle('hidden', !isNumeric)
   actionsRow.classList.toggle('hidden', !isControl)
 }
-
-typeSelect.addEventListener('change', () => {
-  updateDialogFields(typeSelect.value as ChartType)
-})
 
 function parseActions(text: string): { label: string; msg: string }[] | undefined {
   const lines = text.split('\n').map((s) => s.trim()).filter(Boolean)
@@ -140,8 +172,8 @@ cardForm.addEventListener('submit', (e) => {
     return
   }
 
-  const type = CHART_TYPES.includes(typeSelect.value as ChartType)
-    ? (typeSelect.value as ChartType)
+  const type = CHART_TYPES.includes(typeDropdown.getValue() as ChartType)
+    ? (typeDropdown.getValue() as ChartType)
     : 'line'
 
   const minValRaw = (form.minValue as HTMLInputElement).value.trim()
@@ -179,6 +211,7 @@ cardCancel.addEventListener('click', closeCardDialog)
 // ---- SIoT 连接设置对话框 ----
 function openSettingsDialog(): void {
   const s = loadSettings()
+  const t = loadTitles()
   const form = settingsForm as unknown as Record<string, HTMLInputElement | HTMLSelectElement>
   ;(form.siotHost as HTMLInputElement).value = s.siotHost
   ;(form.siotWsPort as HTMLInputElement).value = String(s.siotWsPort)
@@ -186,6 +219,7 @@ function openSettingsDialog(): void {
   ;(form.siotWsTls as HTMLInputElement).checked = s.siotWsTls
   ;(form.siotUser as HTMLInputElement).value = s.siotUser
   ;(form.siotPwd as HTMLInputElement).value = s.siotPwd
+  ;(form.dashboardTitle as HTMLInputElement).value = t.dashboard
   settingsDialog.showModal()
 }
 
@@ -201,6 +235,12 @@ settingsForm.addEventListener('submit', (e) => {
   s.siotPwd = (form.siotPwd as HTMLInputElement).value || s.siotPwd
   saveSettings(s)
 
+  // 保存标题
+  const t: PageTitles = loadTitles()
+  t.dashboard = (form.dashboardTitle as HTMLInputElement).value.trim() || t.dashboard
+  saveTitles(t)
+  applyTitles()
+
   // 换连接：重连 + 全卡清缓冲（防新旧服务器数据混合）
   siotMqtt.updateSettings(s)
   for (const card of cards.values()) card.clearBuffer()
@@ -209,6 +249,72 @@ settingsForm.addEventListener('submit', (e) => {
 })
 
 settingsCancel.addEventListener('click', () => settingsDialog.close())
+
+// ---- 悬浮球聊天 ----
+let chatWidget: ReturnType<typeof createChatWidget> | null = null
+
+function openChatWindow(): void {
+  chatWindow.classList.remove('hidden')
+  chatWindow.classList.add('entering')
+  chatBall.classList.add('hidden')
+  requestAnimationFrame(() => {
+    chatWindow.classList.remove('entering')
+  })
+  if (!chatWidget) {
+    chatWidget = createChatWidget(chatWidgetMount, {
+      compact: true,
+      onSettingsChange: () => {
+        // 聊天设置中可能修改了 SIoT 参数，同步到仪表盘连接
+        const s = loadSettings()
+        siotMqtt.updateSettings(s)
+        for (const card of cards.values()) card.clearBuffer()
+      },
+    })
+  }
+}
+
+function minimizeChatWindow(): void {
+  chatWindow.classList.add('hidden')
+  chatBall.classList.remove('hidden')
+}
+
+chatBall.addEventListener('click', openChatWindow)
+chatWindowMinimize.addEventListener('click', minimizeChatWindow)
+
+// ---- 拖拽 ----
+let dragging = false
+let dragOffsetX = 0
+let dragOffsetY = 0
+
+chatWindowHeader.addEventListener('pointerdown', (e) => {
+  dragging = true
+  const rect = chatWindow.getBoundingClientRect()
+  dragOffsetX = e.clientX - rect.left
+  dragOffsetY = e.clientY - rect.top
+  chatWindowHeader.setPointerCapture(e.pointerId)
+  chatWindow.style.transition = 'none'
+})
+
+chatWindowHeader.addEventListener('pointermove', (e) => {
+  if (!dragging) return
+  let x = e.clientX - dragOffsetX
+  let y = e.clientY - dragOffsetY
+  const maxX = window.innerWidth - chatWindow.offsetWidth
+  const maxY = window.innerHeight - chatWindow.offsetHeight
+  x = Math.max(0, Math.min(x, maxX))
+  y = Math.max(0, Math.min(y, maxY))
+  chatWindow.style.left = `${x}px`
+  chatWindow.style.top = `${y}px`
+  chatWindow.style.right = 'auto'
+  chatWindow.style.bottom = 'auto'
+})
+
+chatWindowHeader.addEventListener('pointerup', (e) => {
+  if (!dragging) return
+  dragging = false
+  chatWindowHeader.releasePointerCapture(e.pointerId)
+  chatWindow.style.transition = ''
+})
 
 // ---- 初始化 ----
 addBtn.addEventListener('click', () => openCardDialog(null))

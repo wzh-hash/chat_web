@@ -12,7 +12,53 @@ export const STORAGE_KEY_CARDS = 'chatweb.cards.v2'
 export const STORAGE_KEY_CARDS_V1 = 'chatweb.cards.v1'
 export const STORAGE_KEY_SETTINGS = 'chatweb.settings.v2'
 export const STORAGE_KEY_SETTINGS_V1 = 'chatweb.settings.v1'
+export const STORAGE_KEY_TITLES = 'chatweb.titles.v1'
 export const DEFAULT_PSIZE = 50
+
+export interface PageTitles {
+  home: string
+  homeSubtitle: string
+  navChat: string
+  navDash: string
+  chat: string
+  dashboard: string
+}
+
+const DEFAULT_TITLES: PageTitles = {
+  home: 'chat_web',
+  homeSubtitle: '本地工具集合（Ollama 聊天 + SIoT 数据可视化）',
+  navChat: '终端对话',
+  navDash: '数据监控',
+  chat: '终端对话',
+  dashboard: '数据仪表盘',
+}
+
+export function loadTitles(): PageTitles {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_TITLES)
+    if (!raw) return { ...DEFAULT_TITLES }
+    const parsed = JSON.parse(raw) as Partial<PageTitles>
+    if (typeof parsed !== 'object' || parsed === null) return { ...DEFAULT_TITLES }
+    return {
+      home: typeof parsed.home === 'string' ? parsed.home : DEFAULT_TITLES.home,
+      homeSubtitle: typeof parsed.homeSubtitle === 'string' ? parsed.homeSubtitle : DEFAULT_TITLES.homeSubtitle,
+      navChat: typeof parsed.navChat === 'string' ? parsed.navChat : DEFAULT_TITLES.navChat,
+      navDash: typeof parsed.navDash === 'string' ? parsed.navDash : DEFAULT_TITLES.navDash,
+      chat: typeof parsed.chat === 'string' ? parsed.chat : DEFAULT_TITLES.chat,
+      dashboard: typeof parsed.dashboard === 'string' ? parsed.dashboard : DEFAULT_TITLES.dashboard,
+    }
+  } catch {
+    return { ...DEFAULT_TITLES }
+  }
+}
+
+export function saveTitles(t: PageTitles): void {
+  try {
+    localStorage.setItem(STORAGE_KEY_TITLES, JSON.stringify(t))
+  } catch {
+    // 静默忽略
+  }
+}
 
 export type ConnectMode = 'direct' | 'proxy'
 

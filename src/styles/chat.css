@@ -1,4 +1,4 @@
-/* chat.css — 聊天页专属样式（极客终端风） */
+/* chat.css — 聊天组件样式（整页 / 悬浮窗共用） */
 
 .chat-app {
   display: flex;
@@ -10,15 +10,26 @@
   gap: 12px;
 }
 
+.chat-widget {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 12px;
+}
+
 /* 顶栏 */
-.chat-header {
+.chat-widget-header {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(12px);
 }
 
-.chat-header h1 {
+.chat-widget-header h1 {
   font-size: 17px;
   margin-right: auto;
   font-family: var(--font-mono);
@@ -36,26 +47,15 @@
   opacity: 1;
 }
 
-.header-controls {
+.chat-widget-controls {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.model-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.model-label select {
+.model-select-wrap {
   min-width: 180px;
   max-width: 280px;
-  font-family: var(--font-mono);
-  font-size: 13px;
 }
 
 /* 错误横幅 */
@@ -118,13 +118,14 @@
 }
 
 /* 底部输入区 */
-.chat-footer {
+.chat-widget-footer {
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   background: rgba(11, 17, 32, 0.9);
   border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .sys-prompt summary {
@@ -258,6 +259,43 @@
   background: linear-gradient(135deg, #fbbf24, #f59e0b);
   border-color: transparent;
   color: #0b1120;
+}
+
+/* 设置对话框 */
+.settings-dialog {
+  /* 基础样式由 base.css dialog 提供 */
+}
+
+/* 紧凑模式（悬浮窗） */
+.chat-widget-compact {
+  gap: 8px;
+}
+
+.chat-widget-compact .chat-widget-header {
+  padding: 8px 12px;
+}
+
+.chat-widget-compact .chat-widget-header h1 {
+  font-size: 14px;
+}
+
+.chat-widget-compact .messages {
+  padding: 6px 8px;
+  gap: 10px;
+}
+
+.chat-widget-compact .bubble {
+  font-size: 12.5px;
+  padding: 10px 12px;
+}
+
+.chat-widget-compact .chat-widget-footer {
+  padding: 10px 12px;
+}
+
+.chat-widget-compact .input-row textarea {
+  max-height: 120px;
+  font-size: 12.5px;
 }
 
 /* 自定义滚动条 */

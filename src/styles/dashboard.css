@@ -98,6 +98,18 @@
   min-height: 320px;
   backdrop-filter: blur(12px);
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  animation: card-enter 0.45s ease both;
+}
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .chart-card:hover {
@@ -209,6 +221,17 @@
   color: var(--accent);
   line-height: 1;
   text-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.value-number.flash {
+  animation: value-flash 0.35s ease;
+}
+
+@keyframes value-flash {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 .value-meta {
@@ -310,4 +333,123 @@
 .form-hint {
   color: var(--text-secondary);
   font-size: 12px;
+}
+
+/* ---- 悬浮球 ---- */
+.chat-ball {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  color: #0b1120;
+  font-size: 24px;
+  border: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 20px rgba(56, 189, 248, 0.25);
+  cursor: pointer;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: ball-breathe 3s ease-in-out infinite;
+}
+
+.chat-ball:hover {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.55), 0 0 30px rgba(56, 189, 248, 0.4);
+}
+
+.chat-ball.hidden {
+  display: none !important;
+}
+
+@keyframes ball-breathe {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 16px rgba(56, 189, 248, 0.2);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 32px rgba(56, 189, 248, 0.45);
+  }
+}
+
+/* ---- 聊天窗 ---- */
+.chat-window {
+  position: fixed;
+  right: 24px;
+  bottom: 92px;
+  width: 380px;
+  height: 600px;
+  max-height: calc(100vh - 120px);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hover), 0 0 40px rgba(56, 189, 248, 0.12);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.chat-window.hidden {
+  display: none;
+}
+
+.chat-window.entering {
+  opacity: 0;
+  transform: scale(0.92) translateY(12px);
+}
+
+.chat-window-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(15, 23, 42, 0.9);
+  border-bottom: 1px solid var(--border);
+  cursor: grab;
+  user-select: none;
+}
+
+.chat-window-header:active {
+  cursor: grabbing;
+}
+
+.chat-window-title {
+  font-size: 14px;
+  font-family: var(--font-mono);
+  margin-right: auto;
+}
+
+.chat-window-minimize {
+  padding: 4px 10px;
+  font-size: 16px;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.chat-window-minimize:hover {
+  color: var(--text);
+  border-color: var(--border-hover);
+}
+
+.chat-window-body {
+  flex: 1;
+  overflow: hidden;
+  padding: 10px;
+}
+
+/* 响应式：小屏聊天窗全宽 */
+@media (max-width: 480px) {
+  .chat-window {
+    left: 8px;
+    right: 8px;
+    width: auto;
+    bottom: 80px;
+  }
 }
