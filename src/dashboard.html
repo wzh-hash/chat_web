@@ -12,7 +12,7 @@
   <div id="app" class="dash-app">
     <header class="dash-header card">
       <a class="back-link" href="index.html">← 首页</a>
-      <h1>数据仪表盘</h1>
+      <h1><span id="dash-title-icon"></span><span id="dash-title-text">数据仪表盘</span></h1>
       <span id="conn-status" class="conn-status" data-state="stopped">未连接</span>
       <div class="header-controls">
         <button id="settings-btn" title="SIoT 连接设置">⚙ 设置</button>
@@ -111,7 +111,7 @@
   </dialog>
 
   <!-- 悬浮球聊天 -->
-  <button id="chat-ball" class="chat-ball" title="打开聊天">💬</button>
+  <button id="chat-ball" class="chat-ball" title="打开聊天"></button>
   <div id="chat-window" class="chat-window hidden">
     <div class="chat-window-header" id="chat-window-header">
       <span class="chat-window-title">终端对话</span>

@@ -45,7 +45,16 @@ export function createDropdown(opts: DropdownOpts): DropdownApi {
 
   function updateTrigger(): void {
     const found = opts.options.find((o) => o.value === currentValue)
-    trigger.textContent = found ? found.label : (opts.placeholder ?? '请选择')
+    const label = found ? found.label : (opts.placeholder ?? '请选择')
+    // 文本放可收缩 span 内，flex 容器中 ellipsis 才生效
+    let span = trigger.querySelector('.dropdown-trigger-text') as HTMLSpanElement | null
+    if (!span) {
+      span = document.createElement('span')
+      span.className = 'dropdown-trigger-text'
+      trigger.appendChild(span)
+    }
+    span.textContent = label
+    trigger.title = label // 长文本省略号截断时 hover 显示全名
   }
 
   function buildList(): void {
@@ -56,6 +65,7 @@ export function createDropdown(opts: DropdownOpts): DropdownApi {
       li.role = 'option'
       li.dataset.value = o.value
       li.textContent = o.label
+      li.title = o.label
       li.tabIndex = -1
       li.addEventListener('click', (e) => {
         e.stopPropagation()

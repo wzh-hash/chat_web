@@ -9,7 +9,7 @@ import { createChatWidget } from '../lib/chat-core'
 // ---- 标题应用 ----
 function applyTitles(): void {
   const t = loadTitles()
-  const h1 = document.querySelector('.chat-widget-title') as HTMLElement | null
+  const h1 = document.querySelector('.chat-widget-title-text') as HTMLElement | null
   if (h1) h1.textContent = t.chat
 }
 

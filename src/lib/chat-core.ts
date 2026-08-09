@@ -8,6 +8,7 @@ import type { ChatMessage } from './types'
 import { loadSettings, saveSettings, ollamaBase } from './config'
 import { collectSiotData } from './siot-common'
 import { createDropdown } from './ui-dropdown'
+import { iconChat, iconDatabase, iconGear, iconHome, iconSend, iconStop, iconTrash } from './icons'
 
 // ---- 内联 Ollama 客户端（原 src/chat/ollama.ts + sse.ts） ----
 
@@ -150,12 +151,12 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
 
   root.innerHTML = `
     <header class="chat-widget-header">
-      ${compact ? '' : '<a class="back-link" href="index.html">← 首页</a>'}
-      <h1 class="chat-widget-title">终端对话</h1>
+      ${compact ? '' : `<a class="back-link" href="index.html">${iconHome} 首页</a>`}
+      <h1 class="chat-widget-title">${iconChat}<span class="chat-widget-title-text">终端对话</span></h1>
       <div class="chat-widget-controls">
         <div class="model-select-wrap" id="model-select-wrap"></div>
-        <button type="button" class="settings-btn" title="设置">⚙ 设置</button>
-        <button type="button" class="clear-btn danger" title="清空对话">清空</button>
+        <button type="button" class="settings-btn" title="设置">${iconGear} 设置</button>
+        <button type="button" class="clear-btn danger" title="清空对话">${iconTrash} 清空</button>
       </div>
     </header>
     <div class="error-banner hidden" id="error-banner">
@@ -169,10 +170,10 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
         <textarea id="system-prompt" rows="2" placeholder="设定模型的行为、身份或约束……"></textarea>
       </details>
       <div class="input-row">
-        <button type="button" id="siot-btn" class="siot-btn" title="采集 SIoT 实时数据">[SIoT]</button>
+        <button type="button" id="siot-btn" class="siot-btn" title="采集 SIoT 实时数据">${iconDatabase} SIoT</button>
         <textarea id="prompt-input" rows="1" placeholder="${compact ? '输入消息…' : '输入消息，Enter 发送，Shift+Enter 换行'}"></textarea>
-        <button type="button" id="send-btn" class="primary">发送</button>
-        <button type="button" id="stop-btn" class="danger hidden">停止</button>
+        <button type="button" id="send-btn" class="primary">${iconSend} 发送</button>
+        <button type="button" id="stop-btn" class="danger hidden">${iconStop} 停止</button>
       </div>
     </footer>
 

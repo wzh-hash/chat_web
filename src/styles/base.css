@@ -25,6 +25,7 @@
     "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", monospace;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * {
@@ -375,7 +376,19 @@ dialog textarea {
 }
 
 .slide-in {
-  animation: slide-in-up 0.35s ease both;
+  animation: slide-in-up 0.35s var(--ease-out) both;
+}
+
+/* 尊重系统"减少动态效果"偏好：关闭所有动画与过渡 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ---- 下拉组件（ui-dropdown） ---- */
@@ -400,6 +413,15 @@ dialog textarea {
   color: var(--text);
   cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* 文本容器：flex 下可收缩 + 省略号截断（长模型名等） */
+.dropdown-trigger-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dropdown-trigger::after {
@@ -435,6 +457,8 @@ dialog textarea {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-hover), 0 0 24px rgba(56, 189, 248, 0.1);
+  min-width: 100%;
+  max-width: 320px;
   max-height: 240px;
   overflow-y: auto;
   transform-origin: top center;
@@ -456,6 +480,9 @@ dialog textarea {
   cursor: pointer;
   font-size: 13px;
   color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   transition: background 0.15s, color 0.15s;
 }
 

@@ -6,6 +6,7 @@
 import { loadSettings, saveSettings, loadTitles, saveTitles, type PageTitles } from '../lib/config'
 import { createDropdown } from '../lib/ui-dropdown'
 import { createChatWidget } from '../lib/chat-core'
+import { iconChat, iconChart } from '../lib/icons'
 import { loadConfigs, saveConfigs, defaultConfig, CHART_TYPES } from './storage'
 import type { ChartCardConfig, ChartType } from './storage'
 import { CardController } from './cards'
@@ -42,11 +43,15 @@ const chatWidgetMount = document.getElementById('chat-widget-mount') as HTMLElem
 // ---- 标题应用 ----
 function applyTitles(): void {
   const t = loadTitles()
-  const h1 = document.querySelector('.dash-header h1') as HTMLElement | null
-  if (h1) h1.textContent = t.dashboard
+  const titleEl = document.getElementById('dash-title-text') as HTMLElement | null
+  if (titleEl) titleEl.textContent = t.dashboard
 }
 
 applyTitles()
+// 图标：页面标题 + 悬浮球
+const dashTitleIcon = document.getElementById('dash-title-icon') as HTMLElement | null
+if (dashTitleIcon) dashTitleIcon.innerHTML = iconChart
+chatBall.innerHTML = iconChat
 
 // ---- 下拉组件：图表类型 ----
 const typeDropdown = createDropdown({
@@ -287,6 +292,8 @@ let dragOffsetX = 0
 let dragOffsetY = 0
 
 chatWindowHeader.addEventListener('pointerdown', (e) => {
+  // 拖拽手柄内的按钮（最小化等）不触发拖拽，避免 pointer capture 劫持 click
+  if ((e.target as HTMLElement).closest('button')) return
   dragging = true
   const rect = chatWindow.getBoundingClientRect()
   dragOffsetX = e.clientX - rect.left

@@ -34,6 +34,23 @@
   margin-right: auto;
   font-family: var(--font-mono);
   letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 按钮图标+文字对齐 */
+.chat-widget-header button,
+.input-row button,
+.siot-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+
+.back-link svg {
+  flex-shrink: 0;
 }
 
 /* 顶栏按钮不换行（紧凑悬浮窗里"设置"两个字曾折行） */
@@ -89,7 +106,18 @@
 
 .msg {
   display: flex;
-  animation: slide-in-up 0.3s ease both;
+  animation: msg-in 0.28s var(--ease-out) both;
+}
+
+@keyframes msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .msg-user {

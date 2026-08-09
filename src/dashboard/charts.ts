@@ -88,11 +88,15 @@ function cartesianOption(type: Exclude<ChartType, "gauge" | "pie">, data: Parsed
   const isScatter = type === 'scatter'
   const color = NEON_COLORS[0]
   return {
+    animationDuration: 600,
+    animationEasing: 'cubicOut',
     tooltip: {
       trigger: 'axis',
       backgroundColor: 'rgba(15,23,42,0.9)',
       borderColor: 'rgba(56,189,248,0.25)',
       textStyle: { color: '#e2e8f0' },
+      extraCssText:
+        'backdrop-filter: blur(8px); box-shadow: 0 8px 24px rgba(0,0,0,0.45); border-radius: 8px;',
     },
     grid: { left: 52, right: 16, top: 24, bottom: 44 },
     xAxis: {
@@ -107,8 +111,19 @@ function cartesianOption(type: Exclude<ChartType, "gauge" | "pie">, data: Parsed
         type: type === 'area' ? 'line' : type,
         smooth: type === 'line' || isArea,
         symbolSize: isScatter ? 10 : 8,
-        itemStyle: isScatter ? { color: NEON_COLORS[1] } : undefined,
-        lineStyle: { width: 2, color },
+        itemStyle: isScatter
+          ? {
+              color: NEON_COLORS[1],
+              shadowBlur: 10,
+              shadowColor: 'rgba(74,222,128,0.4)',
+            }
+          : undefined,
+        lineStyle: {
+          width: 2,
+          color,
+          shadowBlur: isScatter ? 0 : 10,
+          shadowColor: isScatter ? undefined : 'rgba(56,189,248,0.45)',
+        },
         areaStyle: isArea
           ? {
               color: new graphic.LinearGradient(0, 0, 0, 1, [
@@ -162,11 +177,15 @@ function pieOption(data: ParsedDatum[]): EChartsCoreOption {
     counts.set(name, (counts.get(name) ?? 0) + 1)
   }
   return {
+    animationDuration: 600,
+    animationEasing: 'cubicOut',
     tooltip: {
       trigger: 'item',
       backgroundColor: 'rgba(15,23,42,0.9)',
       borderColor: 'rgba(56,189,248,0.25)',
       textStyle: { color: '#e2e8f0' },
+      extraCssText:
+        'backdrop-filter: blur(8px); box-shadow: 0 8px 24px rgba(0,0,0,0.45); border-radius: 8px;',
     },
     legend: { bottom: 0, type: 'scroll', textStyle: { color: '#94a3b8' } },
     series: [
@@ -176,7 +195,12 @@ function pieOption(data: ParsedDatum[]): EChartsCoreOption {
         center: ['50%', '46%'],
         data: [...counts.entries()].map(([name, value]) => ({ name, value })),
         label: { formatter: '{b}: {c}', fontSize: 11, color: '#e2e8f0' },
-        itemStyle: { borderColor: '#0b1120', borderWidth: 2 },
+        itemStyle: {
+          borderColor: '#0b1120',
+          borderWidth: 2,
+          shadowBlur: 8,
+          shadowColor: 'rgba(0,0,0,0.35)',
+        },
         color: NEON_COLORS,
       },
     ],

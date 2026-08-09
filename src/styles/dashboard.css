@@ -23,6 +23,15 @@
   margin-right: auto;
   font-family: var(--font-mono);
   letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chat-window-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .header-controls {
@@ -334,7 +343,6 @@
   border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), var(--accent-hover));
   color: #0b1120;
-  font-size: 24px;
   border: none;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 20px rgba(56, 189, 248, 0.25);
   cursor: pointer;
@@ -349,6 +357,11 @@
 .chat-ball:hover {
   transform: scale(1.1) translateY(-2px);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.55), 0 0 30px rgba(56, 189, 248, 0.4);
+}
+
+.chat-ball svg {
+  width: 26px;
+  height: 26px;
 }
 
 .chat-ball.hidden {
@@ -370,7 +383,10 @@
   right: 24px;
   bottom: 92px;
   width: 440px;
-  height: 680px;
+  /* 高度随消息内容自适应（消除消息区大片空白），上限 680 */
+  height: auto;
+  min-height: 400px;
+  max-height: 680px;
   max-height: calc(100vh - 120px);
   background: var(--surface-solid);
   border: 1px solid var(--border);
@@ -431,6 +447,17 @@
   flex: 1;
   overflow: hidden;
   padding: 10px;
+  min-height: 0;
+}
+
+/* 窗口自适应高度时：消息区随内容伸缩（上限 500 可滚动），消除大片空白 */
+.chat-window-body .chat-widget-compact {
+  height: auto;
+}
+
+.chat-window-body .chat-widget-compact .messages {
+  flex: 0 1 auto;
+  max-height: 500px;
 }
 
 /* 响应式：小屏聊天窗全宽 */
