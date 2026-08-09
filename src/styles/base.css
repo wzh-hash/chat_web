@@ -17,6 +17,8 @@
   --success: #4ade80;
   --success-bg: rgba(74, 222, 128, 0.12);
   --warning: #fbbf24;
+  --collecting: #fb923c;
+  --collecting-bg: rgba(251, 146, 60, 0.12);
   --radius: 12px;
   --radius-sm: 8px;
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
@@ -26,6 +28,18 @@
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", monospace;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* 布局节奏：表单/网格 gap 与按钮尺寸统一变量（各页引用，杜绝魔术数） */
+  --gap-form: 12px;
+  --gap-grid: 8px 12px;
+  --btn-padding-sm: 4px 10px;
+  --btn-padding-md: 8px 14px;
+  --btn-padding-lg: 12px 18px;
+
+  /* 输入框背景层级：通用半透明 / 对话框 / 聊天（顶部最暗） */
+  --input-bg: rgba(15, 23, 42, 0.5);
+  --input-bg-dialog: rgba(15, 23, 42, 0.9);
+  --input-bg-chat: rgba(2, 6, 23, 0.7);
 }
 
 * {
@@ -112,10 +126,21 @@ button {
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
-  padding: 8px 16px;
+  padding: var(--btn-padding-md);
   border-radius: var(--radius-sm);
   transition: background 0.2s, border-color 0.2s, transform 0.1s, box-shadow 0.2s;
   backdrop-filter: blur(8px);
+}
+
+/* 尺寸工具类（D5 决策）：sm 用卡片操作按钮，lg 用悬浮窗控制按钮等需要更易点的场景 */
+button.btn-sm {
+  padding: var(--btn-padding-sm);
+  font-size: 12px;
+}
+
+button.btn-lg {
+  padding: var(--btn-padding-lg);
+  font-size: 15px;
 }
 
 button:hover:not(:disabled) {
@@ -164,7 +189,7 @@ textarea {
   font-family: inherit;
   font-size: 14px;
   color: var(--text);
-  background: var(--surface);
+  background: var(--input-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 8px 12px;
@@ -242,7 +267,7 @@ dialog fieldset {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--gap-grid);
   min-width: 0;
 }
 
@@ -256,7 +281,7 @@ dialog legend {
 dialog fieldset.grid2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px 12px;
+  gap: var(--gap-grid);
 }
 
 /* 网格子项允许收缩，防输入框固有宽度撑破列与 fieldset */
@@ -290,7 +315,7 @@ dialog h2 {
 dialog form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--gap-form);
 }
 
 dialog label {
@@ -302,14 +327,17 @@ dialog label {
 dialog input,
 dialog select,
 dialog textarea {
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--input-bg-dialog);
 }
 
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  /* 与上方表单字段分隔（#16 决策：与全站卡片头分隔线风格统一） */
   margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
 }
 
 /* 空态 */
@@ -352,6 +380,7 @@ dialog textarea {
   animation: pulse-glow 1.2s ease-in-out infinite;
 }
 
+/* status-dot 用：含 scale 的紧凑呼吸 */
 @keyframes pulse-glow {
   0%, 100% {
     opacity: 1;
@@ -361,6 +390,29 @@ dialog textarea {
     opacity: 0.5;
     transform: scale(0.85);
   }
+}
+
+/* 占位图标用（D3 决策）：纯 opacity 淡入淡出，无 transform，避免与卡片 transform 冲突 */
+@keyframes pulse-fade {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* 三个节奏档（D3 决策）：告警强 1s / 连接中 1.5s / 占位图标 2.5s 微弱呼吸 */
+.pulse-alert {
+  animation: pulse-glow 1s ease-in-out infinite;
+}
+
+.pulse-connecting {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+.pulse-placeholder {
+  animation: pulse-fade 2.5s ease-in-out infinite;
 }
 
 
@@ -489,4 +541,21 @@ dialog textarea {
   padding: 6px 12px;
   font-size: 13px;
   font-family: var(--font-mono);
+}
+
+/* ---- 自定义确认弹窗（D2 决策） ----
+   替代 window.confirm：复用 dialog 风格、深色主题，焦点在取消按钮上（防误操作）。 */
+.confirm-dialog {
+  width: min(360px, 90vw);
+  padding: 18px 20px;
+}
+
+.confirm-dialog .confirm-message {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  margin: 0 0 4px;
+  /* 保留换行（消息可能含 topic 名/指令） */
+  white-space: pre-wrap;
+  word-break: break-word;
 }

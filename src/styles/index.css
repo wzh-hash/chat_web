@@ -4,6 +4,8 @@
   max-width: 720px;
   margin: 0 auto;
   padding: 56px 20px;
+  /* #1 决策：让位悬浮球（即使首页没有，也保留一致底部空间） */
+  padding-bottom: 80px;
 }
 
 .page h1 {
@@ -25,7 +27,8 @@
 .status-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
+  /* #2 决策：与全站节奏统一（dashboard 网格 16px） */
+  gap: 16px;
   margin-bottom: 32px;
 }
 
@@ -172,10 +175,11 @@
 }
 
 /* 首页标题设置：两列布局 */
+/* #3 决策：使用统一的 --gap-grid 变量，与 base.css dialog fieldset 节奏一致 */
 dialog .titles-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px 12px;
+  gap: var(--gap-grid);
 }
 
 dialog .titles-span2 {

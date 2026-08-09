@@ -6,8 +6,10 @@
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   min-height: 100vh;
+  /* #1 决策：让位悬浮球（高 56px + 边距 24px ≈ 80px；取 96px 留视觉缓冲） */
+  padding-bottom: 96px;
 }
 
 /* 顶栏 */
@@ -57,6 +59,7 @@
   color: #fbbf24;
   border-color: rgba(251, 191, 36, 0.35);
   box-shadow: 0 0 10px rgba(251, 191, 36, 0.25), 0 0 20px rgba(251, 191, 36, 0.1);
+  /* D3 决策：连接中节奏 1.5s */
   animation: pulse-glow 1.5s ease-in-out infinite;
 }
 
@@ -78,7 +81,8 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 14px;
+  /* #2 决策：gap 14→16px，与全站节奏统一 */
+  gap: 16px;
 }
 
 #empty-hint {
@@ -128,18 +132,28 @@
   gap: 4px;
   font-size: 11px;
   color: var(--danger);
-  background: rgba(248, 113, 113, 0.12);
+  background: var(--danger-bg);
   padding: 2px 8px;
   border-radius: 999px;
   border: 1px solid rgba(248, 113, 113, 0.3);
-  animation: pulse-glow 1.5s ease-in-out infinite;
+  /* D3 决策：告警强节奏 1s */
+  animation: pulse-glow 1s ease-in-out infinite;
 }
 
+/* D4 决策：卡片头拆两行 —— 上行 [标题][告警徽标]，下行 [状态][操作按钮] */
 .card-header {
+  display: flex;
+  flex-direction: column;
+  /* #2 决策：padding 14px 16px 12px */
+  padding: 14px 16px 12px;
+  gap: 8px;
+}
+
+.card-header-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px 8px;
+  min-width: 0;
 }
 
 .card-title {
@@ -149,34 +163,49 @@
   white-space: nowrap;
   font-family: var(--font-mono);
   color: var(--text);
+  /* #12 决策：flex 1 + min-width 0 才能让标题在长文本时正确收缩并省略 */
+  flex: 1;
+  min-width: 0;
 }
 
 .card-alert {
   display: none;
+  flex-shrink: 0;
 }
 
 .card-status {
-  margin-left: auto;
   font-size: 11px;
   color: var(--text-secondary);
-  max-width: 40%;
+  /* #13 决策：状态指示统一（与 conn-status 胶囊风格一致） */
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  font-family: var(--font-mono);
+  max-width: 60%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: var(--font-mono);
+  min-width: 0;
 }
 
 .card-status.is-error {
   color: var(--danger);
+  background: var(--danger-bg);
+  border-color: rgba(248, 113, 113, 0.35);
 }
 
 .card-actions {
   display: flex;
   gap: 6px;
+  /* #12 决策：操作按钮不被压缩 */
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
+/* D5 决策：卡片操作按钮用 sm 尺寸变量 */
 .card-actions button {
-  padding: 4px 10px;
+  padding: var(--btn-padding-sm);
   font-size: 12px;
   font-family: var(--font-mono);
 }
@@ -215,11 +244,11 @@
   justify-content: center;
 }
 
+/* D3 决策：占位图标 2.5s 微弱呼吸（纯 opacity，无 transform） */
 .overlay-icon svg {
   width: 40px;
   height: 40px;
-  opacity: 0.5;
-  animation: pulse-glow 2s ease-in-out infinite;
+  animation: pulse-fade 2.5s ease-in-out infinite;
 }
 
 .overlay-text {
@@ -262,8 +291,8 @@
 .value-placeholder svg {
   width: 40px;
   height: 40px;
-  opacity: 0.5;
-  animation: pulse-glow 2s ease-in-out infinite;
+  /* D3 决策：占位 2.5s 微弱呼吸 */
+  animation: pulse-fade 2.5s ease-in-out infinite;
 }
 
 .value-placeholder p {
@@ -455,8 +484,8 @@
 .image-placeholder svg {
   width: 40px;
   height: 40px;
-  opacity: 0.5;
-  animation: pulse-glow 2s ease-in-out infinite;
+  /* D3 决策：占位 2.5s 微弱呼吸 */
+  animation: pulse-fade 2.5s ease-in-out infinite;
 }
 
 .image-placeholder p {
@@ -478,7 +507,7 @@
 /* 对话框基础样式见 base.css */
 .form-row {
   display: flex;
-  gap: 12px;
+  gap: var(--gap-form);
 }
 
 .form-row label {
@@ -518,7 +547,7 @@
 }
 
 .action-del {
-  padding: 6px 10px;
+  padding: var(--btn-padding-sm);
   font-size: 12px;
   flex-shrink: 0;
 }
@@ -532,6 +561,25 @@
 .form-hint {
   color: var(--text-secondary);
   font-size: 12px;
+}
+
+/* #21 决策：卡片对话框字段随类型切换的过渡。
+   hidden 切换用 max-height 方案（与 visibility: hidden 配合：visibility 立即切换，
+   max-height 走过渡，避免遮挡事件同时仍可见动画）。
+   注意：.hidden 类优先级 !important 会覆盖这里，所以这三个行使用 [hidden] 属性或自定义 .field-hidden 类切换。 */
+.field-collapsible {
+  overflow: hidden;
+  max-height: 200px;
+  opacity: 1;
+  visibility: visible;
+  transition: max-height 0.25s var(--ease-out), opacity 0.2s ease, visibility 0s linear 0s;
+}
+
+.field-collapsible.is-collapsed {
+  max-height: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: max-height 0.25s var(--ease-out), opacity 0.2s ease, visibility 0s linear 0.25s;
 }
 
 /* ---- 悬浮球 ---- */
@@ -595,7 +643,8 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  /* #8 决策：时长 0.3s，与全站过渡节奏统一，曲线用 --ease-out */
+  transition: opacity 0.3s var(--ease-out), transform 0.3s var(--ease-out);
 }
 
 .chat-window.hidden {
@@ -622,6 +671,26 @@
   cursor: grabbing;
 }
 
+/* D22 决策：拖拽手柄 —— 标题前缀的 ⋮⋮ 图标，纯 CSS（零依赖、currentColor 随主题） */
+.chat-window-drag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  cursor: grab;
+}
+
+.chat-window-drag::before {
+  content: '⋮⋮';
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: -4px;
+  /* 字符内左右各一对圆点，手感接近 SVG 6-dot grip */
+}
+
 .chat-window-title {
   font-size: 14px;
   font-family: var(--font-mono);
@@ -629,7 +698,7 @@
 }
 
 .chat-window-minimize {
-  padding: 4px 10px;
+  padding: var(--btn-padding-sm);
   font-size: 16px;
   line-height: 1;
   background: transparent;
@@ -657,8 +726,30 @@
   min-height: 0;
 }
 
-/* 响应式：小屏聊天窗全宽 */
+/* 响应式：≤720px 折叠 conn-status 文字为状态点（#11 决策） */
+@media (max-width: 720px) {
+  .conn-status {
+    /* 用 indent 把文字推出可视区，状态点仍可见。padding/border 保留以维持视觉一致 */
+    font-size: 0;
+    padding: 4px 6px;
+    border-radius: 999px;
+  }
+  .conn-status::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 6px currentColor;
+  }
+}
+
+/* 响应式：<480px 隐藏 .back-link + 聊天窗全宽（#11 决策） */
 @media (max-width: 480px) {
+  .back-link {
+    display: none;
+  }
   .chat-window {
     left: 8px;
     right: 8px;

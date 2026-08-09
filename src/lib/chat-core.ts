@@ -56,6 +56,7 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
         <summary>系统提示词（可选）</summary>
         <textarea id="system-prompt" rows="2" placeholder="设定模型的行为、身份或约束……"></textarea>
       </details>
+      <div id="siot-data-pack" class="siot-data-pack hidden"></div>
       <div class="input-row">
         <button type="button" id="siot-btn" class="siot-btn" title="采集 SIoT 实时数据">${iconDatabase} SIoT</button>
         <textarea id="prompt-input" rows="1" placeholder="${compact ? '输入消息…' : '输入消息，Enter 发送，Shift+Enter 换行'}"></textarea>
@@ -183,6 +184,44 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
   let abortController: AbortController | null = null
   let streaming = false
 
+  // ---- 数据包（采集数据打包，不直接进输入框） ----
+  interface SiotDataPack {
+    topic: string
+    items: { content: string; created: string }[]
+    collectedAt: number
+  }
+  let pendingData: SiotDataPack | null = null
+  const dataPackEl = root.querySelector('#siot-data-pack') as HTMLElement
+
+  function escapeHtml(s: string): string {
+    return s.replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string,
+    )
+  }
+
+  function renderDataPack(): void {
+    dataPackEl.innerHTML = ''
+    if (!pendingData) {
+      dataPackEl.classList.add('hidden')
+      return
+    }
+    const d = pendingData
+    const t = new Date(d.collectedAt)
+    const hhmm = `${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`
+    dataPackEl.innerHTML = `
+      <span class="pack-info">${iconDatabase}
+        <span class="pack-topic">${escapeHtml(d.topic)}</span>
+        <span class="pack-meta">${d.items.length} 条 · ${hhmm}</span>
+      </span>
+      <button type="button" class="pack-del" title="移除数据包">✕</button>
+    `
+    dataPackEl.classList.remove('hidden')
+    ;(dataPackEl.querySelector('.pack-del') as HTMLButtonElement).addEventListener('click', () => {
+      pendingData = null
+      renderDataPack()
+    })
+  }
+
   // ---- 错误提示 ----
   function showError(msg: string): void {
     errorText.textContent = msg
@@ -207,6 +246,8 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
       })
       modelWrap.innerHTML = ''
       modelWrap.appendChild(newDropdown.el)
+      // D19 决策：无模型时整个下拉容器加 is-empty，让 CSS 把过长的 placeholder 文字降到 12px
+      modelWrap.classList.toggle('is-empty', models.length === 0)
       // 更新引用
       Object.assign(modelDropdown, newDropdown)
     } catch (err) {
@@ -235,7 +276,14 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
     row.className = `msg msg-${role}`
     const bubble = document.createElement('div')
     bubble.className = 'bubble'
-    bubble.textContent = content
+    // D6 决策：助手气泡空内容时显示三点占位（首 token 到达后由 onToken 覆盖 textContent 自动移除）
+    if (role === 'assistant' && !content) {
+      bubble.classList.add('typing')
+      // 占位 ::after 不需要 textContent，但保留单空格以维持气泡最小高度
+      bubble.textContent = ' '
+    } else {
+      bubble.textContent = content
+    }
     row.appendChild(bubble)
     messagesEl.appendChild(row)
     updateEmptyHint()
@@ -270,9 +318,19 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
       history.unshift({ role: 'system', content: system })
     }
 
-    history.push({ role: 'user', content: text })
+    // 数据包快照：发送时自动附带采集数据，发送后清除胶囊
+    const pack = pendingData
+    const content = pack
+      ? `${formatSiotData(pack.topic, Math.max(1, Math.round((Date.now() - pack.collectedAt) / 1000)), pack.items)}\n\n${text}`
+      : text
+    if (pack) {
+      pendingData = null
+      renderDataPack()
+    }
+
+    history.push({ role: 'user', content })
     promptInput.value = ''
-    appendMessage('user', text)
+    appendMessage('user', content)
 
     const bubble = appendMessage('assistant', '')
     abortController = new AbortController()
@@ -289,6 +347,8 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
             assistantText += t
             // 模型输出常以换行开头，去掉前导空白（避免回复顶部出现几行空行）
             bubble.textContent = assistantText.replace(/^\s+/, '')
+            // D6 决策：首 token 到达后移除 typing 占位类
+            bubble.classList.remove('typing')
             scrollToBottom()
           },
         },
@@ -296,6 +356,8 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
       )
       history.push({ role: 'assistant', content: assistantText.replace(/^\s+/, '') })
     } catch (err) {
+      // D6 决策：失败/中止时也要移除 typing 占位（避免错误文本后还显示三点）
+      bubble.classList.remove('typing')
       if (err instanceof DOMException && err.name === 'AbortError') {
         const partial = bubble.textContent ?? ''
         if (partial.trim()) history.push({ role: 'assistant', content: partial })
@@ -449,11 +511,13 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
       saveSiotTopic(topic)
       toggleSiotPopover(false)
 
-      const prefix = formatSiotData(topic, durationSec, data)
-      const userText = promptInput.value.trim()
-      const fullContent = userText ? `${prefix}\n\n${userText}` : prefix
-      promptInput.value = fullContent
-      promptInput.focus()
+      if (data.length > 0) {
+        // 打包为数据包胶囊，不直接进输入框；发送时自动附带
+        pendingData = { topic, items: data, collectedAt: Date.now() }
+        renderDataPack()
+      } else {
+        showError(`该 topic 在 ${durationSec} 秒内未收到数据`)
+      }
     } catch (err) {
       clearInterval(countdown)
       showError((err as Error).message || '采集失败')

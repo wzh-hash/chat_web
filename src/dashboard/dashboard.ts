@@ -6,6 +6,7 @@
 import { loadSettings, saveSettings, loadTitles, saveTitles, type PageTitles } from '../lib/config'
 import { createDropdown } from '../lib/ui-dropdown'
 import { createChatWidget } from '../lib/chat-core'
+import { confirmDialog } from '../lib/confirm'
 import { iconChat, iconChart } from '../lib/icons'
 import { loadConfigs, saveConfigs, defaultConfig, CHART_TYPES } from './storage'
 import type { ChartCardConfig, ChartType } from './storage'
@@ -32,6 +33,11 @@ const typeWrap = document.getElementById('card-type-wrap') as HTMLElement
 const unitRow = document.getElementById('unit-row') as HTMLElement
 const thresholdRow = document.getElementById('threshold-row') as HTMLElement
 const actionsRow = document.getElementById('actions-row') as HTMLElement
+
+// #21 决策：为对话框动态字段行启用折叠过渡（max-height + opacity + visibility）
+unitRow.classList.add('field-collapsible')
+thresholdRow.classList.add('field-collapsible')
+actionsRow.classList.add('field-collapsible')
 
 // 悬浮球
 const chatBall = document.getElementById('chat-ball') as HTMLButtonElement
@@ -107,10 +113,16 @@ function renderGrid(): void {
   emptyHint.classList.toggle('hidden', cfgs.length > 0)
 }
 
-function deleteCard(id: string): void {
+async function deleteCard(id: string): Promise<void> {
   const card = cards.get(id)
   if (!card) return
-  if (!window.confirm(`删除图表「${card.cfg.title || card.cfg.topic}」？`)) return
+  // D2 决策：替换 window.confirm 为自定义确认弹窗（深色主题，破坏性操作用 danger 按钮）
+  const ok = await confirmDialog({
+    message: `删除图表「${card.cfg.title || card.cfg.topic}」？`,
+    okLabel: '删除',
+    okButtonClass: 'danger',
+  })
+  if (!ok) return
   const cfgs = loadConfigs().filter((c) => c.id !== id)
   saveConfigs(cfgs)
   renderGrid()
@@ -148,9 +160,10 @@ function updateDialogFields(type: ChartType): void {
   const isNumeric = type === 'line' || type === 'area' || type === 'bar' || type === 'gauge' || type === 'scatter' || type === 'value'
   const isControl = type === 'control'
 
-  unitRow.classList.toggle('hidden', !isValue)
-  thresholdRow.classList.toggle('hidden', !isNumeric)
-  actionsRow.classList.toggle('hidden', !isControl)
+  // #21 决策：用 .is-collapsed 切换走 max-height 过渡（.hidden 走 display:none 冲突）
+  unitRow.classList.toggle('is-collapsed', !isValue)
+  thresholdRow.classList.toggle('is-collapsed', !isNumeric)
+  actionsRow.classList.toggle('is-collapsed', !isControl)
 }
 
 // ---- 控制指令行编辑器 ----

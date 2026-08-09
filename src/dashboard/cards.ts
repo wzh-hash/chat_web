@@ -11,6 +11,7 @@ import { parseContent, type ParsedDatum } from './parse'
 import { initChart, disposeChart, updateChart, hasUsableData } from './charts'
 import type { ChartCardConfig } from './storage'
 import type { ECharts } from 'echarts/core'
+import { confirmDialog } from '../lib/confirm'
 import { iconBar, iconCamera, iconDatabase, iconGauge, iconLine, iconPie, iconPower, iconScatter, iconValue } from '../lib/icons'
 
 export interface CardDeps {
@@ -51,14 +52,21 @@ export class CardController {
 
     this.el = document.createElement('article')
     this.el.className = 'chart-card'
+    /* D4 决策：卡片头拆两行
+       上行：标题 + 告警徽标（左右排）
+       下行：状态（胶囊） + 操作按钮（左状态右操作） */
     this.el.innerHTML = `
       <header class="card-header">
-        <h3 class="card-title"></h3>
-        <span class="card-alert hidden">⚠ 超限</span>
-        <span class="card-status"></span>
-        <div class="card-actions">
-          <button class="edit-btn" title="编辑">编辑</button>
-          <button class="del-btn danger" title="删除">删除</button>
+        <div class="card-header-row">
+          <h3 class="card-title"></h3>
+          <span class="card-alert hidden">⚠ 超限</span>
+        </div>
+        <div class="card-header-row">
+          <span class="card-status"></span>
+          <div class="card-actions">
+            <button class="edit-btn btn-sm" title="编辑">编辑</button>
+            <button class="del-btn btn-sm danger" title="删除">删除</button>
+          </div>
         </div>
       </header>
       <div class="chart-body">
@@ -325,7 +333,12 @@ export class CardController {
       if (!btn) return
       const msg = btn.dataset.msg!
       const label = btn.dataset.label!
-      if (!window.confirm(`向 topic「${this.cfg.topic}」发送指令「${label}」？`)) return
+      // D2 决策：替换 window.confirm 为自定义确认弹窗
+      const ok = await confirmDialog({
+        message: `向 topic「${this.cfg.topic}」发送指令「${label}」？`,
+        okLabel: '发送',
+      })
+      if (!ok) return
       try {
         await siotMqtt.publish(this.cfg.topic, msg)
         feedback.textContent = '已发送 ✓'

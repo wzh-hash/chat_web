@@ -115,6 +115,8 @@
   <button id="chat-ball" class="chat-ball" title="打开聊天"></button>
   <div id="chat-window" class="chat-window hidden">
     <div class="chat-window-header" id="chat-window-header">
+      <!-- D22 决策：拖拽手柄 —— 视觉提示（拖拽行为仍由整 header 处理；按钮的 closest('button') 跳过逻辑不变） -->
+      <span class="chat-window-drag" aria-hidden="true"></span>
       <span class="chat-window-title">终端对话</span>
       <button type="button" id="chat-window-minimize" class="chat-window-minimize" title="最小化">—</button>
     </div>

@@ -27,6 +27,10 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   backdrop-filter: blur(12px);
+  /* backdrop-filter 创建 stacking context，会把内部 z-index:60 的下拉列表
+     限制在头部内、被后续兄弟(消息区/报错横幅)覆盖 —— 提升头部层级 */
+  position: relative;
+  z-index: 20;
 }
 
 .chat-widget-header h1 {
@@ -147,23 +151,43 @@
   line-height: 1.7;
   font-family: var(--font-mono);
   font-size: 13.5px;
-  transition: box-shadow 0.2s;
+  /* 移除无效的 box-shadow 过渡：bubble 无 box-shadow 变化（#9） */
 }
 
+/* D1 决策：用户气泡改用全站 --accent 天蓝系渐变（与首页 nav-card 渐变呼应） */
 .msg-user .bubble {
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(34, 211, 238, 0.08));
-  color: #22d3ee;
-  border: 1px solid rgba(34, 211, 238, 0.25);
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(56, 189, 248, 0.08));
+  color: var(--accent);
+  border: 1px solid rgba(56, 189, 248, 0.25);
   border-bottom-right-radius: 4px;
-  box-shadow: 0 0 16px rgba(34, 211, 238, 0.08);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.08);
 }
 
+/* 助手气泡保留绿色语义 */
 .msg-assistant .bubble {
   background: linear-gradient(135deg, rgba(74, 222, 128, 0.12), rgba(74, 222, 128, 0.04));
-  color: #4ade80;
+  color: var(--success);
   border: 1px solid rgba(74, 222, 128, 0.2);
   border-bottom-left-radius: 4px;
   box-shadow: 0 0 16px rgba(74, 222, 128, 0.06);
+}
+
+/* D6 决策：助手气泡首 token 到达前的三点占位（typing indicator） */
+.bubble.typing::after {
+  content: '● ● ●';
+  display: inline-block;
+  margin-left: 2px;
+  letter-spacing: 4px;
+  color: var(--success);
+  opacity: 0.6;
+  animation: typing-fade 1.2s ease-in-out infinite;
+  font-size: 10px;
+  vertical-align: middle;
+}
+
+@keyframes typing-fade {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 0.9; }
 }
 
 /* 底部输入区 */
@@ -190,7 +214,7 @@
   width: 100%;
   margin-top: 8px;
   resize: vertical;
-  background: rgba(2, 6, 23, 0.7);
+  background: var(--input-bg-chat);
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--text-secondary);
@@ -213,7 +237,7 @@
   resize: none;
   max-height: 180px;
   line-height: 1.6;
-  background: rgba(2, 6, 23, 0.7);
+  background: var(--input-bg-chat);
   font-family: var(--font-mono);
   font-size: 13.5px;
   color: var(--text);
@@ -234,9 +258,71 @@
   font-family: var(--font-mono);
 }
 
+/* 数据包胶囊（采集数据打包，发送时附带） */
+.siot-data-pack {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px 6px 12px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.14), rgba(56, 189, 248, 0.05));
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  animation: msg-in 0.25s var(--ease-out) both;
+}
+
+.pack-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--text);
+}
+
+.pack-info svg {
+  width: 14px;
+  height: 14px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.pack-topic {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--accent);
+}
+
+.pack-meta {
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* D17 决策：默认带边框（不依赖背景色辨识）+ :focus-visible 键盘焦点环 */
+.pack-del {
+  padding: var(--btn-padding-sm);
+  font-size: 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.pack-del:hover {
+  color: var(--danger);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.pack-del:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 /* SIoT 按钮 */
 .siot-btn {
-  padding: 8px 10px;
+  padding: var(--btn-padding-sm);
   font-size: 12px;
   font-family: var(--font-mono);
   color: var(--accent);
@@ -285,7 +371,7 @@
 
 .siot-popover-inner input,
 .siot-popover-inner select {
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--input-bg-dialog);
 }
 
 .siot-close {
@@ -303,9 +389,10 @@
   color: var(--text);
 }
 
+/* D3/D5 决策：采集中状态主色用 --collecting（#fb923c），节奏 1s（与告警同档：强活动） */
 #siot-start.collecting {
   animation: pulse-glow 1s ease-in-out infinite;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  background: linear-gradient(135deg, var(--collecting), #f97316);
   border-color: transparent;
   color: #0b1120;
 }
@@ -313,6 +400,16 @@
 /* 设置对话框 */
 .settings-dialog {
   /* 基础样式由 base.css dialog 提供 */
+}
+
+/* D19 决策：紧凑模式或无选项时下拉触发器文本降字号，避免长模型名截断 */
+.chat-widget-compact .model-select-wrap .dropdown-trigger-text {
+  font-size: 12px;
+}
+
+/* D19 决策：无模型时 placeholder 文本（"请先 ollama pull"）过长，降至 12px 防截断 */
+.model-select-wrap.is-empty .dropdown-trigger-text {
+  font-size: 12px;
 }
 
 /* 紧凑模式（悬浮窗） */
@@ -351,4 +448,3 @@
   max-height: 120px;
   font-size: 12.5px;
 }
-
