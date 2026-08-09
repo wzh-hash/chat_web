@@ -271,6 +271,11 @@
   gap: 8px;
 }
 
+.chat-widget-compact .model-select-wrap {
+  min-width: 140px;
+  max-width: 160px;
+}
+
 .chat-widget-compact .chat-widget-header {
   padding: 8px 12px;
 }

@@ -192,40 +192,36 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
     <dialog id="settings-dialog" class="settings-dialog">
       <form id="settings-form">
         <h2>设置</h2>
-        <fieldset>
+        <fieldset class="grid2">
           <legend>Ollama</legend>
-          <label>地址
+          <label class="span2">地址
             <input name="ollamaUrl" type="url" placeholder="http://127.0.0.1:11434">
           </label>
           <label>连接方式
             <div id="ollama-mode-wrap"></div>
           </label>
         </fieldset>
-        <fieldset>
+        <fieldset class="grid2">
           <legend>SIoT（MQTT）</legend>
-          <label>主机地址
+          <label class="span2">主机地址
             <input name="siotHost" placeholder="10.1.2.3">
           </label>
-          <div class="form-row">
-            <label>WebSocket 端口
-              <input name="siotWsPort" type="number" min="1" max="65535" value="1888">
-            </label>
-            <label>路径
-              <input name="siotWsPath" placeholder="如 /ws">
-            </label>
-          </div>
-          <label class="checkbox-row">
+          <label>WebSocket 端口
+            <input name="siotWsPort" type="number" min="1" max="65535" value="1888">
+          </label>
+          <label>路径
+            <input name="siotWsPath" placeholder="如 /ws">
+          </label>
+          <label class="checkbox-row span2">
             <input name="siotWsTls" type="checkbox">
             启用 TLS（wss://）
           </label>
-          <div class="form-row">
-            <label>账号
-              <input name="siotUser" placeholder="siot">
-            </label>
-            <label>密码
-              <input name="siotPwd" type="password" placeholder="dfrobot">
-            </label>
-          </div>
+          <label>账号
+            <input name="siotUser" placeholder="siot">
+          </label>
+          <label>密码
+            <input name="siotPwd" type="password" placeholder="dfrobot">
+          </label>
         </fieldset>
         <div class="dialog-actions">
           <button type="button" id="settings-cancel">取消</button>

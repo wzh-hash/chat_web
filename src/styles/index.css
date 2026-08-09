@@ -170,3 +170,14 @@
   font-size: 13px;
   color: var(--text-secondary);
 }
+
+/* 首页标题设置：两列布局 */
+dialog .titles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+}
+
+dialog .titles-span2 {
+  grid-column: 1 / -1;
+}
