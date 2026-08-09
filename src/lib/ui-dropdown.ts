@@ -38,6 +38,7 @@ export function createDropdown(opts: DropdownOpts): DropdownApi {
   let open = false
   let activeIndex = -1
   let items: HTMLLIElement[] = []
+  let lastCloseTime = 0
 
   function findIndexByValue(v: string): number {
     return opts.options.findIndex((o) => o.value === v)
@@ -126,6 +127,7 @@ export function createDropdown(opts: DropdownOpts): DropdownApi {
   function closeList(): void {
     if (!open) return
     open = false
+    lastCloseTime = Date.now()
     wrapper.classList.remove('open')
     list.classList.remove('open')
     activeIndex = -1
@@ -133,6 +135,9 @@ export function createDropdown(opts: DropdownOpts): DropdownApi {
   }
 
   function toggleList(): void {
+    // 选择后对话框可能因高度变化整体位移，触发按钮"滑到"鼠标下产生二次
+    // click 重开列表 —— 关闭后 150ms 内忽略重开
+    if (!open && Date.now() - lastCloseTime < 150) return
     if (open) closeList()
     else openList()
   }
