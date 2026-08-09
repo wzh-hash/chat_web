@@ -150,6 +150,7 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
 
   root.innerHTML = `
     <header class="chat-widget-header">
+      ${compact ? '' : '<a class="back-link" href="index.html">← 首页</a>'}
       <h1 class="chat-widget-title">终端对话</h1>
       <div class="chat-widget-controls">
         <div class="model-select-wrap" id="model-select-wrap"></div>
@@ -169,7 +170,7 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
       </details>
       <div class="input-row">
         <button type="button" id="siot-btn" class="siot-btn" title="采集 SIoT 实时数据">[SIoT]</button>
-        <textarea id="prompt-input" rows="1" placeholder="输入消息，Enter 发送，Shift+Enter 换行"></textarea>
+        <textarea id="prompt-input" rows="1" placeholder="${compact ? '输入消息…' : '输入消息，Enter 发送，Shift+Enter 换行'}"></textarea>
         <button type="button" id="send-btn" class="primary">发送</button>
         <button type="button" id="stop-btn" class="danger hidden">停止</button>
       </div>

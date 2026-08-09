@@ -25,17 +25,6 @@
   letter-spacing: 0.02em;
 }
 
-.back-link {
-  font-size: 13px;
-  white-space: nowrap;
-  opacity: 0.8;
-  transition: opacity 0.2s;
-}
-
-.back-link:hover {
-  opacity: 1;
-}
-
 .header-controls {
   display: flex;
   gap: 10px;
@@ -380,8 +369,8 @@
   position: fixed;
   right: 24px;
   bottom: 92px;
-  width: 380px;
-  height: 600px;
+  width: 440px;
+  height: 680px;
   max-height: calc(100vh - 120px);
   background: var(--surface-solid);
   border: 1px solid var(--border);

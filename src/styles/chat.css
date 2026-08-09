@@ -36,6 +36,15 @@
   letter-spacing: 0.02em;
 }
 
+/* 顶栏按钮不换行（紧凑悬浮窗里"设置"两个字曾折行） */
+.chat-widget-header button {
+  white-space: nowrap;
+}
+
+.chat-widget-header .settings-btn {
+  padding: 8px 12px;
+}
+
 .back-link {
   font-size: 13px;
   white-space: nowrap;
