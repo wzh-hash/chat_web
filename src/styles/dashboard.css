@@ -383,10 +383,8 @@
   right: 24px;
   bottom: 92px;
   width: 440px;
-  /* 高度随消息内容自适应（消除消息区大片空白），上限 680 */
+  /* 高度完全随内容自适应（无 min-height，否则窗口底部会出现空白），上限视口-120 */
   height: auto;
-  min-height: 400px;
-  max-height: 680px;
   max-height: calc(100vh - 120px);
   background: var(--surface-solid);
   border: 1px solid var(--border);
@@ -450,13 +448,15 @@
   min-height: 0;
 }
 
-/* 窗口自适应高度时：消息区随内容伸缩（上限 500 可滚动），消除大片空白 */
+/* 窗口自适应高度时：widget 填满 body（auto 高度下百分比解析为内容高，无循环）；
+   消息区为唯一弹性区：内容少时=内容高（无空白），封顶后收缩滚动 */
 .chat-window-body .chat-widget-compact {
-  height: auto;
+  height: 100%;
 }
 
 .chat-window-body .chat-widget-compact .messages {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
+  min-height: 0;
   max-height: 500px;
 }
 

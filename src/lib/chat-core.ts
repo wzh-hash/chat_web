@@ -384,13 +384,14 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
         {
           onToken: (t) => {
             assistantText += t
-            bubble.textContent = assistantText
+            // 模型输出常以换行开头，去掉前导空白（避免回复顶部出现几行空行）
+            bubble.textContent = assistantText.replace(/^\s+/, '')
             scrollToBottom()
           },
         },
         abortController.signal,
       )
-      history.push({ role: 'assistant', content: assistantText })
+      history.push({ role: 'assistant', content: assistantText.replace(/^\s+/, '') })
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
         const partial = bubble.textContent ?? ''
