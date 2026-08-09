@@ -328,6 +328,21 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
   }
 
   // ---- 消息渲染 ----
+  function updateEmptyHint(): void {
+    // 无消息时显示引导文案（messages 为 flex 容器，提示占满居中）
+    let hint = messagesEl.querySelector('.chat-empty') as HTMLElement | null
+    if (messagesEl.querySelector('.msg')) {
+      hint?.remove()
+      return
+    }
+    if (!hint) {
+      hint = document.createElement('div')
+      hint.className = 'chat-empty'
+      hint.textContent = '开始对话吧 —— 也可点 [SIoT] 采集传感器数据给 AI 分析'
+      messagesEl.appendChild(hint)
+    }
+  }
+
   function appendMessage(role: 'user' | 'assistant', content: string): HTMLElement {
     const row = document.createElement('div')
     row.className = `msg msg-${role}`
@@ -336,6 +351,7 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
     bubble.textContent = content
     row.appendChild(bubble)
     messagesEl.appendChild(row)
+    updateEmptyHint()
     scrollToBottom()
     return bubble
   }
@@ -415,6 +431,7 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
   function clearChat(): void {
     history = []
     messagesEl.innerHTML = ''
+    updateEmptyHint()
     hideError()
   }
 
@@ -602,6 +619,7 @@ export function createChatWidget(container: HTMLElement, opts?: ChatWidgetOpts):
   })
 
   // ---- 初始化 ----
+  updateEmptyHint()
   void refreshModels()
 
   return {

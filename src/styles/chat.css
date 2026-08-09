@@ -95,13 +95,23 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  /* 消息从底部堆叠：最新消息紧贴输入框，避免消息区下方出现大段空白 */
-  justify-content: flex-end;
+  /* 消息从顶部排列（常规聊天应用形态） */
   gap: 14px;
   padding: 10px 12px;
   background: rgba(15, 23, 42, 0.35);
   border: 1px solid rgba(56, 189, 248, 0.08);
   border-radius: var(--radius);
+}
+
+/* 空态引导（无消息时） */
+.chat-empty {
+  margin: auto;
+  padding: 16px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  text-align: center;
+  max-width: 80%;
 }
 
 .msg {
