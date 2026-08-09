@@ -303,20 +303,3 @@
   font-size: 12.5px;
 }
 
-/* 自定义滚动条 */
-.messages::-webkit-scrollbar {
-  width: 6px;
-}
-
-.messages::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.messages::-webkit-scrollbar-thumb {
-  background: rgba(56, 189, 248, 0.2);
-  border-radius: 3px;
-}
-
-.messages::-webkit-scrollbar-thumb:hover {
-  background: rgba(56, 189, 248, 0.35);
-}
