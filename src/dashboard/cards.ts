@@ -46,6 +46,7 @@ export class CardController {
   } | null = null
   private imgEl: HTMLImageElement | null = null
   private imgTimeEl: HTMLElement | null = null
+  private imgPlaceholder: HTMLElement | null = null
 
   constructor(container: HTMLElement, cfg: ChartCardConfig, deps: CardDeps) {
     this.cfg = cfg
@@ -154,6 +155,7 @@ export class CardController {
     } else if (this.cfg.type === 'image') {
       this.imgEl!.src = ''
       this.imgEl!.classList.add('hidden')
+      this.imgPlaceholder?.classList.remove('hidden')
       this.imgTimeEl!.textContent = ''
     }
     this.markDirty()
@@ -285,12 +287,14 @@ export class CardController {
     `
     this.imgEl = this.chartHolder.querySelector('img') as HTMLImageElement
     this.imgTimeEl = this.chartHolder.querySelector('.image-time') as HTMLElement
+    this.imgPlaceholder = this.chartHolder.querySelector('.image-placeholder') as HTMLElement
   }
 
   private flushImage(): void {
     const last = this.buffer[this.buffer.length - 1]
     if (!last) {
       this.imgEl!.classList.add('hidden')
+      this.imgPlaceholder?.classList.remove('hidden')
       this.imgTimeEl!.textContent = ''
       return
     }
@@ -302,6 +306,7 @@ export class CardController {
     }
     this.imgEl!.src = src
     this.imgEl!.classList.remove('hidden')
+    this.imgPlaceholder?.classList.add('hidden')
     this.imgEl!.alt = '图传画面'
     this.imgTimeEl!.textContent = `最新帧 ${last.label}`
   }
